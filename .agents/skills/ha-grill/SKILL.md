@@ -168,7 +168,7 @@ entry says what a word means, not what the code does with it.
 
 | The brief describes                                      | Continue with                                                                    |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| A whole integration on the fresh blueprint               | [`blueprint-scaffold`](../blueprint-scaffold/SKILL.md)                           |
+| A whole integration on the fresh blueprint               | `blueprint-scaffold`                                                             |
 | An integration that already has users, being migrated in | [`blueprint-import`](../blueprint-import/SKILL.md) — the brief feeds its phase 0 |
 | More than ~10 files, or a structural change              | [`ha-planning`](../ha-planning/SKILL.md) — plan, then confirm                    |
 | A choice that is expensive to reverse                    | `ha-planning` → an entry in `docs/development/DECISIONS.md`                      |
