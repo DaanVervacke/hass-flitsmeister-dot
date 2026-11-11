@@ -7,8 +7,8 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
-from custom_components.ha_integration_domain.api.client import API_URL, DEFAULT_RETRY_AFTER
-from custom_components.ha_integration_domain.coordinator.base import MIN_RETRY_AFTER, UPDATE_INTERVAL
+from custom_components.flitsmeister_dot.api.client import API_URL, DEFAULT_RETRY_AFTER
+from custom_components.flitsmeister_dot.coordinator.base import MIN_RETRY_AFTER, UPDATE_INTERVAL
 from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant
 

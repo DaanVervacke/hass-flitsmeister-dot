@@ -1,6 +1,6 @@
-# Getting Started with Integration Blueprint
+# Getting Started with Flitsmeister DOT
 
-This guide will help you install and set up the Integration Blueprint custom integration for Home Assistant.
+This guide will help you install and set up the Flitsmeister DOT custom integration for Home Assistant.
 
 ## Prerequisites
 
@@ -12,8 +12,8 @@ This guide will help you install and set up the Integration Blueprint custom int
 ### Via the Marketplace (Home Assistant 2026.11 and newer, recommended)
 
 1. Go to **Settings** → **Marketplace**
-2. Add this repository as a custom repository: `https://github.com/jpawlowski/ha-integration-blueprint`, category "Integration". The Marketplace asks you to connect a GitHub account for repositories outside its catalog.
-3. Open "Integration Blueprint" and click "Download"
+2. Add this repository as a custom repository: `https://github.com/DaanVervacke/hass-flitsmeister-dot`, category "Integration". The Marketplace asks you to connect a GitHub account for repositories outside its catalog.
+3. Open "Flitsmeister DOT" and click "Download"
 
 A restart is not needed for the first installation; updates and removal ask for one.
 
@@ -22,17 +22,17 @@ A restart is not needed for the first installation; updates and removal ask for 
 1. Open HACS in your Home Assistant instance
 2. Click the three dots in the top right corner
 3. Select "Custom repositories"
-4. Add this repository URL: `https://github.com/jpawlowski/ha-integration-blueprint`
+4. Add this repository URL: `https://github.com/DaanVervacke/hass-flitsmeister-dot`
 5. Set category to "Integration"
 6. Click "Add"
-7. Find "Integration Blueprint" in the list and click "Download"
+7. Find "Flitsmeister DOT" in the list and click "Download"
 8. Restart Home Assistant
 
 ### Manual Installation
 
-1. Download the latest release from the [releases page](https://github.com/jpawlowski/ha-integration-blueprint/releases)
-2. Extract the `ha_integration_domain` folder from the archive
-3. Copy it to `custom_components/ha_integration_domain/` in your Home Assistant configuration directory
+1. Download the latest release from the [releases page](https://github.com/DaanVervacke/hass-flitsmeister-dot/releases)
+2. Extract the `flitsmeister_dot` folder from the archive
+3. Copy it to `custom_components/flitsmeister_dot/` in your Home Assistant configuration directory
 4. Restart Home Assistant
 
 ## Initial Setup
@@ -41,7 +41,7 @@ After installation, add the integration:
 
 1. Go to **Settings** → **Devices & Services**
 2. Click **+ Add Integration**
-3. Search for "Integration Blueprint"
+3. Search for "Flitsmeister DOT"
 4. Follow the configuration steps:
 
 ### Step 1: Connection Information
@@ -103,13 +103,13 @@ Add entities to your dashboard:
 1. Go to your dashboard
 2. Click **Edit Dashboard** → **Add Card**
 3. Choose card type (e.g., "Entities", "Glance")
-4. Select entities from "Integration Blueprint"
+4. Select entities from "Flitsmeister DOT"
 
 Example entities card:
 
 ```yaml
 type: entities
-title: Integration Blueprint
+title: Flitsmeister DOT
 entities:
   - sensor.device_name_sensor
   - binary_sensor.device_name_connectivity
@@ -176,7 +176,7 @@ Enable debug logging to troubleshoot issues:
 logger:
   default: warning
   logs:
-    custom_components.ha_integration_domain: debug
+    custom_components.flitsmeister_dot: debug
 ```
 
 Add this to `configuration.yaml`, restart, and reproduce the issue. Check logs for detailed information.
@@ -185,11 +185,11 @@ Add this to `configuration.yaml`, restart, and reproduce the issue. Check logs f
 
 - See [CONFIGURATION.md](./CONFIGURATION.md) for detailed configuration options
 - See [EXAMPLES.md](./EXAMPLES.md) for more automation examples
-- Report issues at [GitHub Issues](https://github.com/jpawlowski/ha-integration-blueprint/issues)
+- Report issues at [GitHub Issues](https://github.com/DaanVervacke/hass-flitsmeister-dot/issues)
 
 ## Support
 
 For help and discussion:
 
-- [GitHub Discussions](https://github.com/jpawlowski/ha-integration-blueprint/discussions)
+- [GitHub Discussions](https://github.com/DaanVervacke/hass-flitsmeister-dot/discussions)
 - [Home Assistant Community Forum](https://community.home-assistant.io/)

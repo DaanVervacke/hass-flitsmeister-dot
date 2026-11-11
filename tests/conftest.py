@@ -1,4 +1,4 @@
-"""Shared fixtures for the ha_integration_domain tests."""
+"""Shared fixtures for the flitsmeister_dot tests."""
 
 from collections.abc import Generator
 import logging
@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.ha_integration_domain.const import DOMAIN
+from custom_components.flitsmeister_dot.const import DOMAIN
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
@@ -39,7 +39,7 @@ def fail_on_deprecation_report(caplog: pytest.LogCaptureFixture) -> Generator[No
 def mock_api() -> Generator[AsyncMock]:
     """Replace the client's HTTP layer, keeping its payload logic under test."""
     with patch(
-        "custom_components.ha_integration_domain.api.client.IntegrationBlueprintApiClient._api_wrapper",
+        "custom_components.flitsmeister_dot.api.client.FlitsmeisterDotApiClient._api_wrapper",
         new_callable=AsyncMock,
         return_value=API_RESPONSE,
     ) as api_wrapper:

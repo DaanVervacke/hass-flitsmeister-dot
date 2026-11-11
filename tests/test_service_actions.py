@@ -3,8 +3,8 @@
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.ha_integration_domain.const import DOMAIN
-from custom_components.ha_integration_domain.service_actions import SERVICE_REFRESH_DATA
+from custom_components.flitsmeister_dot.const import DOMAIN
+from custom_components.flitsmeister_dot.service_actions import SERVICE_REFRESH_DATA
 from homeassistant.const import ATTR_CONFIG_ENTRY_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError

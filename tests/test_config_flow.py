@@ -5,13 +5,13 @@ from unittest.mock import patch
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.ha_integration_domain import async_setup_entry
-from custom_components.ha_integration_domain.const import CONF_FILTER_REPLACEMENT_THRESHOLD
+from custom_components.flitsmeister_dot import async_setup_entry
+from custom_components.flitsmeister_dot.const import CONF_FILTER_REPLACEMENT_THRESHOLD
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
-SETUP_ENTRY = "custom_components.ha_integration_domain.async_setup_entry"
+SETUP_ENTRY = "custom_components.flitsmeister_dot.async_setup_entry"
 
 
 async def test_options_change_reloads_once(

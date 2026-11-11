@@ -1,6 +1,6 @@
 # Configuration Reference
 
-This document describes all configuration options and settings available in the Integration Blueprint custom integration.
+This document describes all configuration options and settings available in the Flitsmeister DOT custom integration.
 
 ## Integration Configuration
 
@@ -30,7 +30,7 @@ These options are configured during initial setup via the Home Assistant UI.
 After initial setup, you can modify settings:
 
 1. Go to **Settings** → **Devices & Services**
-2. Find "Integration Blueprint"
+2. Find "Flitsmeister DOT"
 3. Click **Configure**
 4. Modify settings
 5. Click **Submit**
@@ -86,7 +86,7 @@ Disabled entities won't update or consume resources.
 
 The integration provides the following services:
 
-### `ha_integration_domain.refresh_data`
+### `flitsmeister_dot.refresh_data`
 
 Fetch the current device state immediately instead of waiting for the next poll.
 
@@ -102,7 +102,7 @@ whether the refresh actually produced data.
 **Example:**
 
 ```yaml
-action: ha_integration_domain.refresh_data
+action: flitsmeister_dot.refresh_data
 data:
   config_entry_id: 01JG3T2Q6Z9K4V8P0N5R7X2M1A
 ```
@@ -116,7 +116,7 @@ automation:
       - trigger: sun
         event: sunset
     action:
-      - action: ha_integration_domain.refresh_data
+      - action: flitsmeister_dot.refresh_data
         data:
           config_entry_id: 01JG3T2Q6Z9K4V8P0N5R7X2M1A
 ```
@@ -129,7 +129,7 @@ You can add multiple instances of this integration for different devices:
 
 1. Go to **Settings** → **Devices & Services**
 2. Click **+ Add Integration**
-3. Search for "Integration Blueprint"
+3. Search for "Flitsmeister DOT"
 4. Configure with different connection details
 
 Each instance creates separate entities with unique entity IDs.
@@ -155,7 +155,7 @@ polling and drive updates from an automation.
 The integration provides diagnostic data for troubleshooting:
 
 1. Go to **Settings** → **Devices & Services**
-2. Find "Integration Blueprint"
+2. Find "Flitsmeister DOT"
 3. Click on the device
 4. Click **Download Diagnostics**
 
@@ -177,7 +177,7 @@ The integration works with Home Assistant Blueprints for reusable automations:
 
 ```yaml
 blueprint:
-  name: Integration Blueprint Alert
+  name: Flitsmeister DOT Alert
   description: Send notification when sensor exceeds threshold
   domain: automation
   input:
@@ -186,7 +186,7 @@ blueprint:
       selector:
         entity:
           domain: sensor
-          integration: ha_integration_domain
+          integration: flitsmeister_dot
     threshold:
       name: Threshold
       selector:
@@ -233,4 +233,4 @@ If configuration changes aren't persisted:
 
 - [Getting Started](./GETTING_STARTED.md) - Installation and initial setup
 - [Examples](./EXAMPLES.md) - Automation and dashboard examples
-- [GitHub Issues](https://github.com/jpawlowski/ha-integration-blueprint/issues) - Report problems
+- [GitHub Issues](https://github.com/DaanVervacke/hass-flitsmeister-dot/issues) - Report problems

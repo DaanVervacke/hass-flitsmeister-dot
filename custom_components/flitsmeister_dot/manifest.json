@@ -1,0 +1,14 @@
+{
+  "domain": "flitsmeister_dot",
+  "name": "Flitsmeister DOT",
+  "codeowners": [
+    "@DaanVervacke"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/DaanVervacke/hass-flitsmeister-dot",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/DaanVervacke/hass-flitsmeister-dot/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
