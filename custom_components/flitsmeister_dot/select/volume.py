@@ -1,11 +1,9 @@
 """Volume select for the Flitsmeister DOT integration."""
 
-from flitsmeister_dot_ble import DotError, Volume
+from flitsmeister_dot_ble import Volume
 
-from custom_components.flitsmeister_dot.const import DOMAIN
 from custom_components.flitsmeister_dot.entity import FlitsmeisterDotEntity
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.restore_state import RestoreEntity
 
 ENTITY_DESCRIPTIONS = (
@@ -34,15 +32,9 @@ class FlitsmeisterDotVolumeSelect(RestoreEntity, SelectEntity, FlitsmeisterDotEn
         return volume.name.lower() if volume is not None else None
 
     async def async_select_option(self, option: str) -> None:
-        """Store the volume and write it to the DOT when it is connected.
-
-        Raises:
-            HomeAssistantError: If the DOT refused the write.
-        """
-        try:
-            await self.coordinator.async_set_volume(Volume[option.upper()])
-        except DotError as exception:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key="volume_set_failed",
-            ) from exception
+        """Store the volume and write it to the DOT when it is connected."""
+        volume = Volume[option.upper()]
+        await self._async_write(
+            lambda coordinator: coordinator.async_set_volume(volume),
+            "volume_set_failed",
+        )

@@ -2,12 +2,10 @@
 
 from typing import TYPE_CHECKING
 
-from flitsmeister_dot_ble import DotError, DotNotReadyError
-
 from custom_components.flitsmeister_dot.const import DEVICE_NAME, DOMAIN
 from custom_components.flitsmeister_dot.coordinator import FlitsmeisterDotCoordinator
+from custom_components.flitsmeister_dot.utils import async_run_dot_write
 from homeassistant.const import CONF_ADDRESS
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -47,19 +45,5 @@ class FlitsmeisterDotEntity(CoordinatorEntity[FlitsmeisterDotCoordinator]):
         Args:
             call: Receives the coordinator and performs the write.
             translation_key: Key of the message shown when the write fails.
-
-        Raises:
-            HomeAssistantError: If the DOT is asleep or refused the write.
         """
-        try:
-            await call(self.coordinator)
-        except DotNotReadyError as exception:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key="device_asleep",
-            ) from exception
-        except DotError as exception:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key=translation_key,
-            ) from exception
+        await async_run_dot_write(call(self.coordinator), translation_key)

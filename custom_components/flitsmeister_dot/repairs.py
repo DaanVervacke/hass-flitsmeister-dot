@@ -1,4 +1,4 @@
-"""Repairs platform for flitsmeister_dot."""
+"""Repairs platform for the Flitsmeister DOT integration."""
 
 from typing import TYPE_CHECKING
 
@@ -13,13 +13,9 @@ async def async_create_fix_flow(
     issue_id: str,
     data: dict[str, str | int | float | None] | None,
 ) -> RepairsFlow:
-    """
-    Create the repair flow for an issue this integration raised.
-
-    Branch on issue_id here once an issue needs more than an acknowledgement.
+    """Create the repair flow for an issue this integration raised.
 
     Returns:
         The flow that fixes the issue.
-
     """
     return ConfirmRepairFlow()

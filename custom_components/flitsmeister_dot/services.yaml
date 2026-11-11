@@ -68,7 +68,7 @@ play_progress:
       name: Color
       description: The color of the lit LEDs.
       required: true
-      example: speed_trap
+      example: warning
       selector:
         select:
           translation_key: color

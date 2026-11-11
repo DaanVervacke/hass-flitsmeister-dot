@@ -42,7 +42,11 @@ class FlitsmeisterDotConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         self,
         user_input: dict[str, Any] | None = None,
     ) -> config_entries.ConfigFlowResult:
-        """Let the user pick a discovered DOT or enter an address."""
+        """Let the user pick a discovered DOT or enter an address.
+
+        Returns:
+            The menu, or the manual address form.
+        """
         if self._async_discovered_dots():
             return self.async_show_menu(
                 step_id="user",

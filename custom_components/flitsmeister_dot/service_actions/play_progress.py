@@ -3,12 +3,12 @@
 from dataclasses import replace
 from typing import TYPE_CHECKING
 
-from flitsmeister_dot_ble import DotColor, DotError, DotNotReadyError, animations
+from flitsmeister_dot_ble import DotColor, animations
 import probatio
 
 from custom_components.flitsmeister_dot.const import DOMAIN
+from custom_components.flitsmeister_dot.utils import async_run_dot_write
 from homeassistant.const import ATTR_DEVICE_ID
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.service import async_get_device_and_config_entry
 
@@ -41,15 +41,4 @@ async def async_handle_play_progress(hass: HomeAssistant, call: ServiceCall) -> 
         if call.data["blink"]
         else animations.progress(color=color, fraction=fraction)
     )
-    try:
-        await entry.runtime_data.async_play_animation(animation)
-    except DotNotReadyError as exception:
-        raise HomeAssistantError(
-            translation_domain=DOMAIN,
-            translation_key="device_asleep",
-        ) from exception
-    except DotError as exception:
-        raise HomeAssistantError(
-            translation_domain=DOMAIN,
-            translation_key="animation_failed",
-        ) from exception
+    await async_run_dot_write(entry.runtime_data.async_play_animation(animation), "animation_failed")
