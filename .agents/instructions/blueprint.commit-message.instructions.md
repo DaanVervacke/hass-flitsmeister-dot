@@ -16,15 +16,11 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 
 ```text
 type(scope): short summary (max 100 chars)
-
-- Body bullet point: explain WHAT changed and WHY, not HOW
-- One bullet per logical change; include all non-trivial changes
-- Reference issues if applicable: Closes #123 or Fixes #456
-
-BREAKING CHANGE: Description (required if breaking, triggers major version bump)
 ```
 
-**Always analyze the full staged diff before writing the message.** Summarize every meaningful change in the body — do not omit files or changes that are not obvious from the subject line.
+**Commit messages are a single subject line.** No body, no footers, no blank lines, no trailers, and a single `-m`
+flag. The commit guardrail in this project rejects anything else. Analyze the full staged diff before writing the
+subject, so it names the change that matters most.
 
 ## Types
 
@@ -39,7 +35,7 @@ BREAKING CHANGE: Description (required if breaking, triggers major version bump)
 | `ci`       | CI/CD pipeline changes                                             |
 | `perf`     | Performance improvements                                           |
 
-Use `feat!` or `fix!` (with `!`) as shorthand for breaking changes when the summary line is sufficient. Always add the `BREAKING CHANGE:` footer for clarity.
+Mark a breaking change with `!` after the type: `feat!:` or `fix!:`. There is no `BREAKING CHANGE:` footer, because commits carry no footers.
 
 ## Scopes
 
@@ -59,11 +55,11 @@ as if it were user-facing, while the `ci` **type** is `hidden` in
 
 ## Rules
 
-1. **Always include a body** when more than one file changes or the subject alone is ambiguous
+1. **Subject line only**: one line, no body, no footers
 2. **Always include a scope** when the change is clearly scoped to one component or layer
 3. Subject line: ≤ 100 chars, no capital after colon, no trailing period
-4. Body: blank line between subject and body; use bullet points, not prose
-5. Breaking changes: add `BREAKING CHANGE:` footer **and** warn the developer before implementing
+4. Plain ASCII and plain language only
+5. Breaking changes: mark them with `!` **and** warn the developer before implementing
 6. Multiple unrelated changes → separate commits, not one large commit
 7. **A pull request title is a commit subject.** Pull requests are squash-merged by default, with the title as the
    commit on `main`, so it follows rule 3 and the types above; the `PR title` check enforces it. A pull request
@@ -75,10 +71,4 @@ The breaking-change shape, which the rules above do not show:
 
 ```text
 feat!: redesign config entry data structure
-
-- Replace flat dict with TypedDict ConfigEntryData
-- Update coordinator and config flow to use new structure
-
-BREAKING CHANGE: existing config entries must be re-created after upgrading
-  from v1.x — no automatic migration provided
 ```

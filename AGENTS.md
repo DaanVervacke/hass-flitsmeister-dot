@@ -393,7 +393,8 @@ including options that look unused.
 > ⚠️ This changes the entity ID format from `sensor.device_name` to `sensor.device_name_sensor`. Existing automations
 > and dashboards will break. Should I proceed, or would you prefer a migration path?
 
-Record it with a `BREAKING CHANGE:` footer either way.
+Record it with a `!` after the commit type either way, like `feat!:`. Commit messages here are subject-only, so there
+is no `BREAKING CHANGE:` footer.
 
 **Before `1.0.0`, breaking is usually the right answer** — the goal is a settled code base, not compatibility code
 wrapped around a shape nobody has committed to yet. What still needs asking is whether to build the **migration**:

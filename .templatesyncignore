@@ -61,6 +61,8 @@ docs/blueprint/
 # use generic placeholders and ARE safely synced from the template.
 AGENTS.md
 CLAUDE.md
+# Changed to subject-only commit messages for this project.
+.agents/instructions/blueprint.commit-message.instructions.md
 
 # ── Agent skills ─────────────────────────────────────────────
 # Skills under .agents/skills/ use generic placeholders and ARE safely synced,
