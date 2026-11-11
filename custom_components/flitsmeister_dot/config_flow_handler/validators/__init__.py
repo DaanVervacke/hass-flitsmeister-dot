@@ -1,5 +1,15 @@
 """Validators for config flow inputs."""
 
-from .credentials import validate_credentials
+from .device import (
+    FlitsmeisterDotAddressError,
+    FlitsmeisterDotConnectError,
+    validate_address_format,
+    validate_connection,
+)
 
-__all__ = ["validate_credentials"]
+__all__ = [
+    "FlitsmeisterDotAddressError",
+    "FlitsmeisterDotConnectError",
+    "validate_address_format",
+    "validate_connection",
+]

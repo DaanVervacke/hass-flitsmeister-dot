@@ -54,6 +54,7 @@ filterwarnings = [
     # never from this integration, so they would only mask Core's upstream work.
     "ignore:Setting custom ClientSession\\..* attribute is discouraged:DeprecationWarning",
     "ignore:Inheritance class .* from web\\.Application is discouraged:DeprecationWarning",
+    "ignore::aiohttp.web_exceptions.NotAppKeyWarning",
 ]
 
 [tool.coverage.run]
@@ -249,6 +250,7 @@ split-on-trailing-comma = false
     "PLR2004", # Magic values are fine in tests
     "D",       # Docstrings not required in tests
     "PTH",     # Use pathlib - temporary exemption for tests
+    "TID251",
 ]
 
 [tool.ruff.lint.mccabe]

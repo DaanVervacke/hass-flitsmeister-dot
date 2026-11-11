@@ -7,45 +7,32 @@
 [![hacs][hacsbadge]][hacs]
 ![Project Maintenance][maintenance-shield]
 
-<!--
-Uncomment and customize these badges if you want to use them:
-
-[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
-[![Discord][discord-shield]][discord]
--->
-
 **✨ Develop in the cloud:** Want to contribute or customize this integration? Open it directly in GitHub Codespaces - no local setup required!
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/DaanVervacke/hass-flitsmeister-dot?quickstart=1)
 
+Home Assistant integration for the [Flitsmeister DOT](https://www.flitsmeister.nl/), the dashboard device that warns drivers about speed cameras and hazards. It connects over Bluetooth Low Energy and works without the Flitsmeister phone app.
+
+> [!IMPORTANT]
+> Unofficial and not endorsed by Flitsmeister. A firmware update can break it. The DOT accepts one Bluetooth connection at a time, so while Home Assistant is connected the phone app is not.
+
 ## ✨ Features
 
-- **Easy Setup**: Simple configuration through the UI - no YAML required
-- **Air Quality Monitoring**: Track AQI and PM2.5 levels in real-time
-- **Filter Management**: Monitor filter life and get replacement alerts
-- **Smart Control**: Adjust fan speed, target humidity, and operating modes
-- **Child Lock**: Safety feature to prevent accidental changes
-- **Diagnostic Info**: View filter life, runtime hours, and device statistics
-- **Reconfigurable**: Change credentials anytime without removing the integration
-- **Options Flow**: Choose when the filter replacement warning turns on
-- **Custom Actions**: Advanced control with built-in actions
+- **No credentials**: the DOT is paired over Bluetooth, nothing to sign in to
+- **Live status**: battery level, charging state and motion, pushed while the DOT is awake
+- **Alerts from Home Assistant**: play any Flitsmeister alert on the DOT from an automation, with the LED pattern and sound the app uses
+- **Approach progress**: light the LED ring to show how close the car is to a hazard
+- **Button events**: trigger automations from the red and blue button, short and long press
+- **Settings control**: change the volume, LED brightness and LED orientation
+- **Discovery**: the DOT is found automatically once it wakes up
 
 **This integration will set up the following platforms.**
 
-| Platform        | Description                                              |
-| --------------- | -------------------------------------------------------- |
-| `sensor`        | Air quality index (AQI), PM2.5, filter life, and runtime |
-| `binary_sensor` | API connection status and filter replacement alert       |
-| `switch`        | Child lock and LED display controls                      |
-| `select`        | Fan speed selection (Low/Medium/High/Auto)               |
-| `number`        | Target humidity setting (30-80%)                         |
-| `button`        | Reset filter timer after replacement                     |
-| `fan`           | Air purifier fan control with speed settings             |
-
-> [!TIP]
-> **Interactive Demo:** The entities are interconnected for demonstration.
-> Press the **Reset Filter Timer** button to see **Filter Life Remaining** update to 100%.
-> Changing the **Air Purifier** fan speed syncs the **Fan Speed** select, and vice versa.
+| Platform | Description                                         |
+| -------- | --------------------------------------------------- |
+| `sensor` | Battery, charging state, motion and speech language |
+| `select` | Volume, LED brightness and LED orientation          |
+| `event`  | Red and blue button, each with short and long press |
 
 ## 🚀 Quick Start
 
@@ -55,7 +42,7 @@ Uncomment and customize these badges if you want to use them:
 
 Click the button below to open the integration in the Marketplace, or in HACS on older versions:
 
-[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jpawlowski&repository=hass-flitsmeister-dot&category=integration)
+[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=DaanVervacke&repository=hass-flitsmeister-dot&category=integration)
 
 Then:
 
@@ -76,192 +63,76 @@ If you prefer not to use the Marketplace or HACS:
 
 </details>
 
-### Step 2: Add and Configure the Integration
+### Step 2: Add the DOT
 
-**Important:** You must have installed the integration first (see Step 1), and restarted Home Assistant if Step 1 asked you to.
-
-#### Option 1: One-Click Setup (Quick)
-
-Click the button below to open the configuration dialog:
-
-[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=flitsmeister_dot)
-
-Follow the setup wizard:
-
-1. Enter your username
-2. Enter your password
-3. Click Submit
-
-That's it! The integration will start loading your data.
-
-#### Option 2: Manual Configuration
+The DOT sleeps while it is parked and wakes when its accelerometer senses motion, so pick it up or take it for a drive before setup.
 
 1. Go to **Settings** → **Devices & Services**
-2. Click **"+ Add Integration"**
-3. Search for "Flitsmeister DOT"
-4. Follow the same setup steps as Option 1
+2. Click **"+ Add Integration"** and search for "Flitsmeister DOT"
+3. Pick your DOT from the discovered devices, or enter its Bluetooth address by hand
+4. Home Assistant connects once to check the DOT, then finishes
 
-### Step 3: Adjust Settings (Optional)
+Once the DOT wakes up, Home Assistant connects and stays connected while it is awake. While it sleeps in a parked car, its entities show as unavailable.
 
-After setup, you can adjust options:
+### Step 3: Start Using!
 
-1. Go to **Settings** → **Devices & Services**
-2. Find **Flitsmeister DOT**
-3. Click **Configure** to adjust:
-   - Update interval (how often to refresh data)
-   - Enable debug logging
+The integration creates these entities for your DOT:
 
-You can also **Reconfigure** your credentials anytime without removing the integration.
-
-### Step 4: Start Using!
-
-The integration creates several entities for your air purifier:
-
-- **Sensors**: Air quality index, PM2.5 levels, filter life remaining, total runtime
-- **Binary Sensors**: API connection status, filter replacement alert
-- **Switches**: Child lock, LED display control
-- **Select**: Fan speed (Low/Medium/High/Auto)
-- **Number**: Target humidity (30-80%)
-- **Button**: Reset filter timer
-- **Fan**: Air purifier fan control
+- **Sensors**: battery level, charging state (unplugged, charging, plugged in), motion (parked, driving), speech language (diagnostic)
+- **Selects**: volume (silent, low, normal, hard), LED brightness (10 to 100), LED orientation (normal, upside down)
+- **Events**: red button and blue button, each with short_press and long_press
 
 Find all entities in **Settings** → **Devices & Services** → **Flitsmeister DOT** → click on the device.
 
-## Available Entities
+## Actions
 
-### Sensors
+Two actions drive the DOT from automations. Both target the DOT device and fail with a clear error while it is asleep.
 
-- **Air Quality Index (AQI)**: Real-time air quality measurement (0-500 scale)
-  - Includes air quality category (Good/Moderate/Unhealthy/etc.)
-  - Health recommendations based on current AQI
-- **PM2.5**: Fine particulate matter concentration in µg/m³
-- **Filter Life Remaining** (Diagnostic): Shows remaining filter life as percentage
-- **Total Runtime** (Diagnostic): Total operating hours of the device
+### `flitsmeister_dot.play_animation`
 
-### Binary Sensors
-
-- **API Connection**: Shows whether the connection to the API is active
-  - On: Connected and receiving data
-  - Off: Connection lost or authentication failed
-  - Shows update interval and API endpoint information
-- **Filter Replacement Needed**: Alerts when filter needs replacement
-  - Shows estimated days remaining
-  - Turns on when filter life is low
-
-### Switches
-
-- **Child Lock**: Prevents accidental button presses on the device
-  - Icon changes based on state (locked/unlocked)
-- **LED Display**: Enable/disable the LED display
-  - Disabled by default - enable in entity settings if needed
-
-### Select
-
-- **Fan Speed**: Choose from Low, Medium, High, or Auto
-  - Icon changes dynamically based on selected speed
-  - Auto mode adjusts speed based on air quality
-  - Syncs bidirectionally with the Air Purifier fan entity
-
-### Number
-
-- **Target Humidity**: Set desired humidity level (30-80%)
-  - Adjustable in 5% increments
-  - Displayed as a slider in the UI
-
-### Button
-
-- **Reset Filter Timer**: Reset the filter life to 100%
-  - Press to reset after replacing the filter
-  - Instantly updates the Filter Life Remaining sensor
-
-### Fan
-
-- **Air Purifier**: Control the air purifier fan speed and power
-  - Three speed levels: Low, Medium, High
-  - Syncs bidirectionally with the Fan Speed select entity
-  - Turn on/off functionality
-
-## Custom Services
-
-The integration provides services for advanced automation:
-
-### `flitsmeister_dot.example_action`
-
-Perform a custom action (customize this for your needs).
-
-**Example:**
+Play one of the alert animations the Flitsmeister app uses, with the matching LED pattern and sound.
 
 ```yaml
-service: flitsmeister_dot.example_action
+service: flitsmeister_dot.play_animation
 data:
-  # Add your parameters here
+  device_id: your_dot_device_id
+  preset: speed_trap
 ```
 
-### `flitsmeister_dot.reload_data`
+Presets include `speed_trap`, `speed_cam`, `traffic_camera`, `avg_speed_check_start`, `avg_speed_check_end`, `traffic_jam_start`, `traffic_jam_end`, `police_hotspot`, `roadworks`, `ambulance`, `fire_truck`, `police`, `emergency_vehicle`, `railway_crossing`, `wrong_way_driving`, `wrong_way_driver`, incident variants like `accident`, `object_on_road` and `animal_on_the_road`, lane closures, and utilities like `startup`, `fade_out` and `updating`.
 
-Manually refresh data from the API without waiting for the update interval.
+### `flitsmeister_dot.play_progress`
 
-**Example:**
+Light the LED ring to show how close the car is to a hazard, like the approach progress in the app.
 
 ```yaml
-service: flitsmeister_dot.reload_data
+service: flitsmeister_dot.play_progress
+data:
+  device_id: your_dot_device_id
+  color: speed_trap
+  fraction: 50
+  blink: false
 ```
 
-Use these services in automations or scripts for more control.
+Set `blink: true` for the blinking overspeed warning with the reduce speed sound.
 
-## Configuration Options
+## Button events
 
-### During Setup
-
-| Name     | Required | Description           |
-| -------- | -------- | --------------------- |
-| Username | Yes      | Your account username |
-| Password | Yes      | Your account password |
-
-### After Setup (Options)
-
-You can change these anytime by clicking **Configure**:
-
-| Name             | Default | Description                |
-| ---------------- | ------- | -------------------------- |
-| Update Interval  | 1 hour  | How often to refresh data  |
-| Enable Debugging | Off     | Enable extra debug logging |
+The DOT has two buttons. A press under one second is a short press, holding longer is a long press, the same thresholds the Flitsmeister app uses. In the app a long press files a report with Flitsmeister, which Home Assistant cannot do, so the buttons are yours: trigger any automation from the event entities.
 
 ## Troubleshooting
 
-### Authentication Issues
+### The DOT does not show up in discovery
 
-#### Reauthentication
+The DOT only advertises after accelerometer motion. Pick it up, shake it, or drive with it, then try again. You can also add it by its Bluetooth address without discovery.
 
-If your credentials expire or change, Home Assistant will automatically prompt you to reauthenticate:
+### Entities are unavailable
 
-1. Go to **Settings** → **Devices & Services**
-2. Look for **"Action Required"** or **"Configuration Required"** message on the integration
-3. Click **"Reconfigure"** or follow the prompt
-4. Enter your updated credentials
-5. Click Submit
+While the DOT sleeps in a parked car its entities are unavailable. That is normal. They come back when the DOT wakes and Home Assistant reconnects.
 
-The integration will automatically resume normal operation with the new credentials.
+### The phone app cannot connect
 
-#### Manual Credential Update
-
-You can also update credentials at any time without waiting for an error:
-
-1. Go to **Settings** → **Devices & Services**
-2. Find **Flitsmeister DOT**
-3. Click the **3 dots menu** → **Reconfigure**
-4. Enter new username/password
-5. Click Submit
-
-#### Connection Status
-
-Monitor your connection status with the **API Connection** binary sensor:
-
-- **On** (Connected): Integration is receiving data normally
-- **Off** (Disconnected): Connection lost or authentication failed
-  - Check the binary sensor attributes for diagnostic information
-  - Verify credentials if authentication failed
-  - Check network connectivity
+The DOT accepts one Bluetooth connection at a time. While Home Assistant is connected, the Flitsmeister app is not. To give the DOT back to the app, disable or remove the integration.
 
 ### Enable Debug Logging
 
@@ -272,27 +143,12 @@ logger:
   default: info
   logs:
     custom_components.flitsmeister_dot: debug
+    flitsmeister_dot_ble: debug
 ```
 
-### Common Issues
+### Diagnostics
 
-#### Authentication Errors
-
-If you receive authentication errors:
-
-1. Verify your username and password are correct
-2. Check that your account has the necessary permissions
-3. Wait for the automatic reauthentication prompt, or manually reconfigure
-4. Check the API Connection binary sensor for status
-
-#### Device Not Responding
-
-If your device is not responding:
-
-1. Check the **API Connection** binary sensor - it should be "On"
-2. Check your network connection
-3. Verify the device is powered on
-4. Check the integration diagnostics (Settings → Devices & Services → Flitsmeister DOT → 3 dots → Download diagnostics)
+Download diagnostics from **Settings** → **Devices & Services** → **Flitsmeister DOT** → the 3 dots menu. The Bluetooth address and serial number are redacted before download.
 
 ## 🤝 Contributing
 
@@ -326,14 +182,14 @@ You'll need these installed locally:
 
 - **A Docker-compatible container engine** — see options by platform:
 
-  | Option                                                                                                                   | 🍎 macOS | 🐧 Linux | 🪟 Windows | Notes                                                                                                                                                                                                                                     |
-  | ------------------------------------------------------------------------------------------------------------------------ | :------: | :------: | :--------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | [Docker Desktop](https://www.docker.com/products/docker-desktop/)                                                        |    ✅    |    ✅    |     ✅     | **Easiest starting point for all platforms.** GUI-based, well-documented, one installer. Uses WSL2 as default backend on Windows (Hyper-V also available). Installation requires admin rights; daily use does not. Free for personal use. |
-  | [OrbStack](https://orbstack.dev/) ⭐                                                                                     |    ✅    |    —     |     —      | **Recommended for macOS** once Docker Desktop feels slow. Starts in ~2s, much lighter on RAM/CPU, full Docker API compatibility. Free for personal use.                                                                                   |
-  | [Docker CE](https://docs.docker.com/engine/install/) (native) ⭐                                                         |    —     |    ✅    |     —      | **Recommended for Linux.** Install directly via your package manager — no VM, no GUI, no overhead. Free.                                                                                                                                  |
-  | [WSL2](https://learn.microsoft.com/windows/wsl/install) + [Docker CE](https://docs.docker.com/engine/install/ubuntu/) ⭐ |    —     |    —     |     ✅     | **Recommended for Windows** once you're comfortable with WSL2. Docker runs natively inside WSL2 — no GUI overhead. Requires one-time WSL2 setup. Free.                                                                                    |
-  | [Rancher Desktop](https://rancherdesktop.io/)                                                                            |    ✅    |    ✅    |     ✅     | Open source by SUSE. GUI-based, uses WSL2 on Windows. Good alternative to Docker Desktop. Free.                                                                                                                                           |
-  | [Colima](https://github.com/abiosoft/colima)                                                                             |    ✅    |    ✅    |     —      | CLI-only, very lightweight. Good for terminal-focused workflows. Free.                                                                                                                                                                    |
+  | Option                                                                                                                   | 🍎 macOS | 🐧 Linux | 🪟 Windows | Notes                                                                                                                                                                             |
+  | ------------------------------------------------------------------------------------------------------------------------ | :------: | :------: | :--------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | [Docker Desktop](https://www.docker.com/products/docker-desktop/)                                                        |    ✅    |    ✅    |     ✅     | **Easiest starting point for all platforms.** GUI-based, well-documented, one installer. Uses WSL2 as default backend on Windows (Hyper-V also available). Free for personal use. |
+  | [OrbStack](https://orbstack.dev/) ⭐                                                                                     |    ✅    |    —     |     —      | **Recommended for macOS** once Docker Desktop feels slow. Starts in ~2s, much lighter on RAM, full Docker API compatibility. Free for personal use.                               |
+  | [Docker CE](https://docs.docker.com/engine/install/) (native) ⭐                                                         |    —     |    ✅    |     —      | **Recommended for Linux.** Install directly via your package manager — no VM, no GUI, no overhead. Free for personal use.                                                         |
+  | [WSL2](https://learn.microsoft.com/windows/wsl/install) + [Docker CE](https://docs.docker.com/engine/install/ubuntu/) ⭐ |    —     |    —     |     ✅     | **Recommended for Windows** once you're comfortable with WSL2. Docker runs natively inside WSL2 — no GUI overhead. Requires one-time WSL2 setup.                                  |
+  | [Rancher Desktop](https://rancherdesktop.io/)                                                                            |    ✅    |    ✅    |     ✅     | Open source by SUSE. GUI-based, uses WSL2 on Windows. Good alternative to Docker Desktop. Free for personal use.                                                                  |
+  | [Colima](https://github.com/abiosoft/colima)                                                                             |    ✅    |    ✅    |     —      | CLI-only, very lightweight. Good alternative for terminal-focused users. Free for personal use.                                                                                   |
 
 - **VS Code** with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 - **Git** — macOS and Linux usually have it already; see below if not, or to get a newer version:
@@ -350,7 +206,7 @@ You'll need these installed locally:
   | **Disk** | 10 GB free | 20 GB free (SSD strongly recommended) |
 
 > [!TIP]
-> **Not sure which Docker option to pick?** Start with [Docker Desktop](https://www.docker.com/products/docker-desktop/) — it works on all platforms, has a GUI, and needs no extra setup. The ⭐ options are faster alternatives once you're comfortable. macOS and Linux offer the best devcontainer experience — containers run with no extra VM layer and file I/O is fast. Windows works well too; this integration uses named container volumes (files live inside WSL2, not on the Windows drive) to keep performance acceptable.
+> **Not sure which Docker option to pick?** Start with [Docker Desktop](https://www.docker.com/products/docker-desktop/) — it works on all platforms, has a GUI, and needs no extra setup. The ⭐ options are faster alternatives once you're comfortable. macOS and Linux offer the best devcontainer experience — containers run with no extra VM layer and file I/O is fast. Windows works well too — this integration uses named container volumes (files live inside WSL2, not on the Windows drive) to keep performance acceptable.
 
 > [!NOTE]
 > **New to Dev Containers?** See the [VS Code Dev Containers documentation](https://code.visualstudio.com/docs/devcontainers/containers#_system-requirements) for system requirements and how to install the extension. **Once the extension is installed, you're done** — this repository already ships a complete devcontainer configuration. You don't need to follow the rest of the VS Code guide; the setup steps below are all that's needed.
@@ -359,9 +215,9 @@ You'll need these installed locally:
 
 1. **Clone in a Dev Container:**
 
-   **🍎 macOS / 🐧 Linux:** Clone the repository and open the folder in VS Code → click **"Reopen in Container"** when prompted (or `F1` → **"Dev Containers: Reopen in Container"**).
+   **🍎 macOS / 🐧 Linux:** Clone the repository and open the folder in VS Code → click **"Reopen in Container"** when prompted (or `F1` → **Dev Containers: Reopen in Container**).
 
-   **🪟 Windows:** In VS Code, press `F1` → **"Dev Containers: Clone Repository in Named Container Volume..."** and enter the repository URL. This keeps files inside WSL2 for best I/O performance.
+   **🪟 Windows:** In VS Code, press `F1` → **Dev Containers: Clone Repository in Named Container Volume..."** and enter the repository URL. This keeps files inside WSL2 for best I/O performance.
 
 2. Wait for the container to build (2-3 minutes first time)
 
@@ -401,19 +257,16 @@ script/develop          # Home Assistant runs at http://localhost:8123
 > **Transparency Notice:** This integration was developed with assistance from AI coding agents (GitHub Copilot,
 > Claude, and others). AI assistance by itself neither guarantees nor rules out software quality. To make an informed
 > installation decision, review the project's stated maturity, known limitations, automated test coverage, real-device
-> testing, and the extent of human review. The maintainer should replace the fields below with accurate project-specific
-> details rather than implying checks that were not performed. See the blueprint's [`AI_POLICY.md`](AI_POLICY.md) for
+> testing, and the extent of human review. See the blueprint's [`AI_POLICY.md`](AI_POLICY.md) for
 > guidance.
 >
-> - **AI assistance:** limited / substantial / predominant
-> - **Human review:** complete / partial / spot-checked / not performed
-> - **Automated tests:** [describe or state "not performed"]
-> - **Real-device or service testing:** [describe or state "not performed"]
-> - **Maturity and known limitations:** [describe]
+> - **AI assistance:** substantial
+> - **Human review:** partial, the maintainer decided the feature scope, entity list and connection model in a structured interview
+> - **Automated tests:** full suite passing, 164 tests covering setup, config flow, entities and actions against an in-memory fake device
+> - **Real-device or service testing:** not performed yet, pending verification against a live DOT
+> - **Maturity and known limitations:** first release, depends on the unofficial flitsmeister-dot-ble library, a firmware update can break the protocol
 >
 > If you encounter unexpected behavior, please [open an issue](../../issues) on GitHub.
->
-> _This section can be removed or modified if AI assistance was not used in your integration's development._
 
 ---
 
@@ -435,10 +288,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 [maintenance-shield]: https://img.shields.io/badge/maintainer-%40DaanVervacke-blue.svg?style=for-the-badge
 [releases-shield]: https://img.shields.io/github/release/DaanVervacke/hass-flitsmeister-dot.svg?style=for-the-badge
 [releases]: https://github.com/DaanVervacke/hass-flitsmeister-dot/releases
-[user_profile]: https://github.com/jpawlowski
+[user_profile]: https://github.com/DaanVervacke
 
 <!-- Optional badge definitions - uncomment if needed:
-[buymecoffee]: https://www.buymeacoffee.com/jpawlowski
+[buymecoffee]: https://www.buymeacoffee.com/DaanVervacke
 [buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=for-the-badge
 [discord]: https://discord.gg/Qa5fW2R
 [discord-shield]: https://img.shields.io/discord/330944238910963714.svg?style=for-the-badge

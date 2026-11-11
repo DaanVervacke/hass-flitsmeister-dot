@@ -1,70 +1,40 @@
-"""Config flow schemas for the user, reconfigure and reauth steps."""
+"""probatio schemas for the config flow forms."""
 
-from collections.abc import Mapping
 from typing import Any
 
 import probatio
 
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.helpers import selector
-
-_USERNAME_SELECTOR = selector.TextSelector(
-    selector.TextSelectorConfig(
-        type=selector.TextSelectorType.TEXT,
-        autocomplete="username",
-    ),
-)
-_PASSWORD_SELECTOR = selector.TextSelector(
-    selector.TextSelectorConfig(
-        type=selector.TextSelectorType.PASSWORD,
-        autocomplete="current-password",
-    ),
-)
+from homeassistant.const import CONF_ADDRESS
 
 
-def get_user_schema(defaults: Mapping[str, Any] | None = None) -> probatio.Schema:
-    """
-    Build the schema for the user step.
-
-    Args:
-        defaults: Previously submitted values, used to pre-fill the form.
-
-    Returns:
-        The probatio schema for the credentials form.
-
-    """
-    defaults = defaults or {}
+def get_manual_schema(user_input: dict[str, Any] | None) -> probatio.Schema:
+    """Return the form that asks for the Bluetooth address."""
     return probatio.Schema(
         {
             probatio.Required(
-                CONF_USERNAME,
-                default=defaults.get(CONF_USERNAME, probatio.UNDEFINED),
-            ): _USERNAME_SELECTOR,
-            probatio.Required(CONF_PASSWORD): _PASSWORD_SELECTOR,
-        },
+                CONF_ADDRESS,
+                default=(user_input or {}).get(CONF_ADDRESS, ""),
+            ): str,
+        }
     )
 
 
-def get_credentials_schema(username: str) -> probatio.Schema:
-    """
-    Build the schema for the reconfigure and reauth steps.
+def get_discovered_schema(
+    dots: dict[str, str],
+    current_address: str | None,
+) -> probatio.Schema:
+    """Return the form that picks one of the discovered DOTs.
 
     Args:
-        username: The entry's current username, used to pre-fill the form.
-
-    Returns:
-        The probatio schema for the credentials form.
-
+        dots: The Bluetooth address of every discovered DOT, mapped to
+            its label in the dropdown.
+        current_address: The address chosen in a previous attempt.
     """
     return probatio.Schema(
         {
-            probatio.Required(CONF_USERNAME, default=username): _USERNAME_SELECTOR,
-            probatio.Required(CONF_PASSWORD): _PASSWORD_SELECTOR,
-        },
+            probatio.Required(
+                CONF_ADDRESS,
+                default=current_address or next(iter(dots)),
+            ): probatio.In(dots),
+        }
     )
-
-
-__all__ = [
-    "get_credentials_schema",
-    "get_user_schema",
-]

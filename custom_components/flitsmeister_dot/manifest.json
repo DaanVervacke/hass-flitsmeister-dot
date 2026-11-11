@@ -1,14 +1,32 @@
 {
   "domain": "flitsmeister_dot",
   "name": "Flitsmeister DOT",
+  "bluetooth": [
+    {
+      "connectable": true,
+      "local_name": "FM DOT"
+    },
+    {
+      "connectable": true,
+      "service_uuid": "27831530-33ee-9b9c-124d-109d6b0c0a91"
+    }
+  ],
   "codeowners": [
     "@DaanVervacke"
   ],
   "config_flow": true,
+  "dependencies": [
+    "bluetooth"
+  ],
   "documentation": "https://github.com/DaanVervacke/hass-flitsmeister-dot",
-  "integration_type": "hub",
-  "iot_class": "cloud_polling",
+  "integration_type": "device",
+  "iot_class": "local_push",
   "issue_tracker": "https://github.com/DaanVervacke/hass-flitsmeister-dot/issues",
-  "requirements": [],
+  "loggers": [
+    "flitsmeister_dot_ble"
+  ],
+  "requirements": [
+    "flitsmeister-dot-ble>=0.1.0"
+  ],
   "version": "0.1.0"
 }

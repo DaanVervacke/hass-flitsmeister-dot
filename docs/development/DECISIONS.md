@@ -20,6 +20,49 @@ Each decision is documented with:
 
 ## Decision Log
 
+### Use flitsmeister-dot-ble from PyPI instead of writing a client
+
+**Date:** 2026-11-11
+
+**Context:** The DOT speaks a proprietary BLE protocol reverse engineered from the Flitsmeister Android app. The maintainer's own [flitsmeister-dot-ble](https://github.com/DaanVervacke/flitsmeister-dot-ble) library already wraps it: connection lifecycle, notification decoding, button press resolution, animation presets and settings writes, with a transport interface that keeps it testable.
+
+**Decision:** Require `flitsmeister-dot-ble>=0.1.0` and build no client of our own. The library is published to PyPI so the manifest requirement installs cleanly.
+
+**Rationale:**
+
+- The protocol knowledge lives in the library, maintained next to its PROTOCOL.md, instead of being copied into the integration
+- The transport interface lets the test suite run against an in-memory fake
+- bleak and bleak-retry-connector pins match Home Assistant's own, so no dependency conflicts
+
+**Consequences:**
+
+- A firmware update breaks the library first, and the integration follows its releases
+- The integration holds no wire-format code, so protocol fixes ship without touching this repository
+
+---
+
+### Stay connected while the DOT is awake, unavailable while it sleeps
+
+**Date:** 2026-11-11
+
+**Context:** The DOT sleeps while parked and advertises in bursts after accelerometer motion. It drops a connection that only subscribes and reads after about 4 seconds, and it accepts one connection at a time, so Home Assistant and the phone app exclude each other.
+
+**Decision:** The coordinator listens for advertisements, connects when the DOT wakes and stays connected, pushing every decoded value to the entities. A lost session marks the entities unavailable until the next advertisement reconnects. The connect sequence writes the stored volume and plays the startup animation, like the app, which also keeps the link past the idle drop.
+
+**Rationale:**
+
+- Button events only arrive over a live connection, and animations play instantly instead of after a connect delay
+- Session state, not advertisement presence, drives availability: a connected DOT that stopped advertising must not flip to unavailable
+- Entities honestly show unavailable while the DOT sleeps in a parked car instead of serving stale values
+
+**Consequences:**
+
+- The phone app cannot connect while Home Assistant holds the DOT
+- Battery history has gaps for every parked period
+- The coordinator is a push coordinator with no update interval, not a polling one
+
+---
+
 ### Use DataUpdateCoordinator for All Data Fetching
 
 **Date:** 2025-11-29 (Template initialization)

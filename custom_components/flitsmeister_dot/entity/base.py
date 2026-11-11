@@ -1,10 +1,12 @@
-"""Base entity class for flitsmeister_dot."""
+"""Base entity class for the Flitsmeister DOT integration."""
 
 from typing import TYPE_CHECKING
 
-from custom_components.flitsmeister_dot.api import FlitsmeisterDotApiClientError
-from custom_components.flitsmeister_dot.const import ATTRIBUTION, DOMAIN
-from custom_components.flitsmeister_dot.coordinator import FlitsmeisterDotDataUpdateCoordinator
+from flitsmeister_dot_ble import DotError, DotNotReadyError
+
+from custom_components.flitsmeister_dot.const import DEVICE_NAME, DOMAIN
+from custom_components.flitsmeister_dot.coordinator import FlitsmeisterDotCoordinator
+from homeassistant.const import CONF_ADDRESS
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -12,70 +14,52 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
-    from custom_components.flitsmeister_dot.api import FlitsmeisterDotApiClient
     from homeassistant.helpers.entity import EntityDescription
 
 
-class FlitsmeisterDotEntity(CoordinatorEntity[FlitsmeisterDotDataUpdateCoordinator]):
-    """
-    Base entity providing device info, unique ID and attribution.
+class FlitsmeisterDotEntity(CoordinatorEntity[FlitsmeisterDotCoordinator]):
+    """Base entity with the device info and the write error handling."""
 
-    The unique ID is `{entry_id}_{key}`, the documented identifier of last resort.
-    A real integration switches to the device's serial, MAC or account ID before its
-    first release, because changing it afterwards needs a registry migration.
-    """
-
-    _attr_attribution = ATTRIBUTION
     _attr_has_entity_name = True
 
     def __init__(
         self,
-        coordinator: FlitsmeisterDotDataUpdateCoordinator,
+        coordinator: FlitsmeisterDotCoordinator,
         entity_description: EntityDescription,
     ) -> None:
         """Initialize the entity."""
         super().__init__(coordinator)
         self.entity_description = entity_description
-        self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{entity_description.key}"
+        address = coordinator.config_entry.data[CONF_ADDRESS]
+        self._attr_unique_id = f"{address}_{entity_description.key}"
         self._attr_device_info = DeviceInfo(
-            identifiers={
-                (
-                    coordinator.config_entry.domain,
-                    coordinator.config_entry.entry_id,
-                ),
-            },
-            name=coordinator.config_entry.title,
-            manufacturer="Flitsmeister DOT",
-            model=coordinator.data["model"],
-            serial_number=coordinator.data["serial_number"],
-            sw_version=coordinator.data["sw_version"],
+            identifiers={(DOMAIN, address)},
+            name=DEVICE_NAME,
         )
 
     async def _async_write(
         self,
-        call: Callable[[FlitsmeisterDotApiClient], Awaitable[None]],
+        call: Callable[[FlitsmeisterDotCoordinator], Awaitable[None]],
         translation_key: str,
-        **placeholders: str,
     ) -> None:
-        """
-        Run a write against the device, then refresh the coordinator.
+        """Run one write against the DOT and turn its failures into user errors.
 
         Args:
-            call: Receives the API client and performs the write.
-            translation_key: Key of the exception message used when the write fails.
-            **placeholders: Values for that message's placeholders.
+            call: Receives the coordinator and performs the write.
+            translation_key: Key of the message shown when the write fails.
 
         Raises:
-            HomeAssistantError: If the device cannot be reached or rejects the write.
-
+            HomeAssistantError: If the DOT is asleep or refused the write.
         """
         try:
-            await call(self.coordinator.config_entry.runtime_data.client)
-        except FlitsmeisterDotApiClientError as exception:
+            await call(self.coordinator)
+        except DotNotReadyError as exception:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="device_asleep",
+            ) from exception
+        except DotError as exception:
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key=translation_key,
-                translation_placeholders=placeholders or None,
             ) from exception
-
-        await self.coordinator.async_request_refresh()

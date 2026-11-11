@@ -1,16 +1,101 @@
-# yaml-language-server: $schema=../../schemas/yaml/services_schema.yaml
-# The names and descriptions here are only the fallback shown when a translation is
-# missing; users see services.<action>.* from translations/en.json.
-
-refresh_data:
-  name: Refresh data
-  description: Fetch the current device state immediately instead of waiting for the next poll.
+play_animation:
+  name: Play animation
+  description: Plays one of the alert animations on the DOT.
   fields:
-    config_entry_id:
-      name: Integration entry
-      description: The configuration entry to refresh.
+    device_id:
+      name: Device
+      description: The DOT that plays the animation.
       required: true
-      example: 01JG3T2Q6Z9K4V8P0N5R7X2M1A
       selector:
-        config_entry:
+        device:
           integration: flitsmeister_dot
+    preset:
+      name: Animation
+      description: The alert the DOT plays.
+      required: true
+      example: speed_trap
+      selector:
+        select:
+          translation_key: preset
+          options:
+            - startup
+            - fade_out
+            - speed_trap
+            - speed_cam
+            - traffic_camera
+            - avg_speed_check_start
+            - avg_speed_check_end
+            - traffic_jam_start
+            - traffic_jam_end
+            - police_hotspot
+            - roadworks
+            - ambulance
+            - fire_truck
+            - police
+            - emergency_vehicle
+            - railway_crossing
+            - wrong_way_driving
+            - wrong_way_driver
+            - reporting
+            - brightness_sample
+            - orientation_sample
+            - updating
+            - accident
+            - stationary_vehicle
+            - object_on_road
+            - animal_on_the_road
+            - person_on_the_road
+            - dangerous_situation
+            - impact_attenuator
+            - poor_visibility
+            - slippery_road
+            - bumpy_road
+            - lane_closed
+            - left_lane_closed
+            - right_lane_closed
+play_progress:
+  name: Play progress
+  description: Shows how close the car is to a hazard on the LED ring.
+  fields:
+    device_id:
+      name: Device
+      description: The DOT that plays the animation.
+      required: true
+      selector:
+        device:
+          integration: flitsmeister_dot
+    color:
+      name: Color
+      description: The color of the lit LEDs.
+      required: true
+      example: speed_trap
+      selector:
+        select:
+          translation_key: color
+          options:
+            - danger
+            - avg_speed_check
+            - speed_trap
+            - speed_cam
+            - white
+            - pro
+            - success
+            - warning
+    fraction:
+      name: Progress
+      description: How much of the LED ring is lit, as a percentage.
+      required: true
+      example: 50
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          unit_of_measurement: "%"
+    blink:
+      name: Blink
+      description: Blink the lit LEDs and play the reduce speed sound, like the overspeed warning.
+      required: true
+      default: false
+      selector:
+        boolean:

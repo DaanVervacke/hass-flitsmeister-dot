@@ -1,5 +1,5 @@
-"""Data update coordinator package for flitsmeister_dot."""
+"""Coordinator package for the Flitsmeister DOT integration."""
 
-from .base import FlitsmeisterDotDataUpdateCoordinator
+from .base import FlitsmeisterDotCoordinator
 
-__all__ = ["FlitsmeisterDotDataUpdateCoordinator"]
+__all__ = ["FlitsmeisterDotCoordinator"]

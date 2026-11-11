@@ -1,39 +1,61 @@
 {
   "entity": {
     "sensor": {
-      "filter_life": {
-        "default": "mdi:air-filter"
-      }
-    },
-    "switch": {
-      "child_lock": {
-        "default": "mdi:lock",
+      "charging_state": {
+        "default": "mdi:battery",
         "state": {
-          "off": "mdi:lock-open-variant"
+          "unplugged": "mdi:battery-minus",
+          "charging": "mdi:battery-charging",
+          "plugged_in": "mdi:power-plug-battery"
         }
       },
-      "led_display": {
-        "default": "mdi:led-on",
+      "motion_status": {
+        "default": "mdi:car",
         "state": {
-          "off": "mdi:led-off"
+          "parked": "mdi:car-off",
+          "driving": "mdi:car-side"
         }
+      },
+      "speech_language": {
+        "default": "mdi:translate"
       }
     },
     "select": {
-      "fan_speed": {
-        "default": "mdi:fan",
+      "volume": {
+        "default": "mdi:volume-high",
         "state": {
-          "low": "mdi:fan-speed-1",
-          "medium": "mdi:fan-speed-2",
-          "high": "mdi:fan-speed-3",
-          "auto": "mdi:fan-auto"
+          "silent": "mdi:volume-off",
+          "low": "mdi:volume-low",
+          "normal": "mdi:volume-medium",
+          "hard": "mdi:volume-high"
         }
+      },
+      "brightness": {
+        "default": "mdi:brightness-6"
+      },
+      "led_orientation": {
+        "default": "mdi:rotate-3d-variant",
+        "state": {
+          "normal": "mdi:rotate-3d-variant",
+          "upside_down": "mdi:rotate-3d"
+        }
+      }
+    },
+    "event": {
+      "red_button": {
+        "default": "mdi:gesture-tap-button"
+      },
+      "blue_button": {
+        "default": "mdi:gesture-tap-button"
       }
     }
   },
   "services": {
-    "refresh_data": {
-      "service": "mdi:refresh"
+    "play_animation": {
+      "service": "mdi:led-strip"
+    },
+    "play_progress": {
+      "service": "mdi:led-strip-variant"
     }
   }
 }

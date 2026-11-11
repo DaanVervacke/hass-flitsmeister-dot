@@ -1,12 +1,13 @@
-"""Sensor platform for flitsmeister_dot."""
+"""Sensor platform for the Flitsmeister DOT integration."""
 
 from typing import TYPE_CHECKING
 
-from .air_quality import ENTITY_DESCRIPTIONS as AIR_QUALITY_DESCRIPTIONS
-from .diagnostic import ENTITY_DESCRIPTIONS as DIAGNOSTIC_DESCRIPTIONS
+from .battery import ENTITY_DESCRIPTIONS as BATTERY_DESCRIPTIONS
+from .charging import ENTITY_DESCRIPTIONS as CHARGING_DESCRIPTIONS
 from .entity import FlitsmeisterDotSensor
+from .motion import ENTITY_DESCRIPTIONS as MOTION_DESCRIPTIONS
+from .speech_language import ENTITY_DESCRIPTIONS as SPEECH_LANGUAGE_DESCRIPTIONS
 
-# Read-only platform: the coordinator already serializes the fetch.
 PARALLEL_UPDATES = 0
 
 if TYPE_CHECKING:
@@ -14,7 +15,12 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-ENTITY_DESCRIPTIONS = (*AIR_QUALITY_DESCRIPTIONS, *DIAGNOSTIC_DESCRIPTIONS)
+ENTITY_DESCRIPTIONS = (
+    *BATTERY_DESCRIPTIONS,
+    *CHARGING_DESCRIPTIONS,
+    *MOTION_DESCRIPTIONS,
+    *SPEECH_LANGUAGE_DESCRIPTIONS,
+)
 
 
 async def async_setup_entry(
@@ -23,6 +29,4 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the sensor platform."""
-    async_add_entities(
-        FlitsmeisterDotSensor(entry.runtime_data.coordinator, description) for description in ENTITY_DESCRIPTIONS
-    )
+    async_add_entities(FlitsmeisterDotSensor(entry.runtime_data, description) for description in ENTITY_DESCRIPTIONS)

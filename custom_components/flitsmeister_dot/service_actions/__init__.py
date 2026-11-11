@@ -1,47 +1,38 @@
-"""Service action registration for flitsmeister_dot."""
-
-from typing import TYPE_CHECKING
-
-import probatio
+"""Service action registration for the Flitsmeister DOT integration."""
 
 from custom_components.flitsmeister_dot.const import DOMAIN
-from homeassistant.const import ATTR_CONFIG_ENTRY_ID
-from homeassistant.core import SupportsResponse, callback
-from homeassistant.helpers import config_validation as cv
+from homeassistant.core import HomeAssistant, ServiceCall, callback
 
-from .refresh_data import async_handle_refresh_data
+from .play_animation import PLAY_ANIMATION_SCHEMA, async_handle_play_animation
+from .play_progress import PLAY_PROGRESS_SCHEMA, async_handle_play_progress
 
-if TYPE_CHECKING:
-    from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse
-
-SERVICE_REFRESH_DATA = "refresh_data"
-
-REFRESH_DATA_SCHEMA = probatio.Schema(
-    {
-        probatio.Required(ATTR_CONFIG_ENTRY_ID): cv.string,
-    },
-)
+SERVICE_PLAY_ANIMATION = "play_animation"
+SERVICE_PLAY_PROGRESS = "play_progress"
 
 
 @callback
 def async_setup_services(hass: HomeAssistant) -> None:
-    """Register the integration's service actions once, at component level."""
+    """Register the integration's actions once, at component level."""
 
-    async def handle_refresh_data(call: ServiceCall) -> ServiceResponse:
-        """
-        Run the refresh_data action.
+    async def handle_play_animation(call: ServiceCall) -> None:
+        """Play one preset animation on the targeted DOT."""
+        await async_handle_play_animation(hass, call)
 
-        Returns:
-            The handler's response data.
+    async def handle_play_progress(call: ServiceCall) -> None:
+        """Play the approach progress animation on the targeted DOT."""
+        await async_handle_play_progress(hass, call)
 
-        """
-        return await async_handle_refresh_data(hass, call)
-
-    if not hass.services.has_service(DOMAIN, SERVICE_REFRESH_DATA):
+    if not hass.services.has_service(DOMAIN, SERVICE_PLAY_ANIMATION):
         hass.services.async_register(
             DOMAIN,
-            SERVICE_REFRESH_DATA,
-            handle_refresh_data,
-            schema=REFRESH_DATA_SCHEMA,
-            supports_response=SupportsResponse.OPTIONAL,
+            SERVICE_PLAY_ANIMATION,
+            handle_play_animation,
+            schema=PLAY_ANIMATION_SCHEMA,
+        )
+    if not hass.services.has_service(DOMAIN, SERVICE_PLAY_PROGRESS):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_PLAY_PROGRESS,
+            handle_play_progress,
+            schema=PLAY_PROGRESS_SCHEMA,
         )
