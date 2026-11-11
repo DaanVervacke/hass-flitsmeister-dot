@@ -126,6 +126,8 @@ docs/
 # Keep this file in your control — customize the schedule,
 # add PAT secrets, or adjust PR settings as you see fit.
 .github/workflows/template-sync.yml
+# Fetches the pull request head with an API call, so it works on a private repository.
+.github/workflows/lint.yml
 
 # ── Lockfiles ────────────────────────────────────────────────
 # Manage your own lockfile to avoid noisy, conflict-prone PRs.
