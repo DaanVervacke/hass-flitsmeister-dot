@@ -1,11 +1,12 @@
 # Getting Started with Flitsmeister DOT
 
-This guide will help you install and set up the Flitsmeister DOT custom integration for Home Assistant.
+This guide installs the Flitsmeister DOT integration and adds your DOT to Home Assistant.
 
 ## Prerequisites
 
 - Home Assistant 2026.10.0 or newer
-- Network connectivity to [external service/device]
+- A Bluetooth adapter or an ESPHome Bluetooth proxy within range of the DOT
+- A Flitsmeister DOT
 
 ## Installation
 
@@ -37,159 +38,99 @@ A restart is not needed for the first installation; updates and removal ask for 
 
 ## Initial Setup
 
-After installation, add the integration:
+The DOT sleeps while it is parked and only advertises after it senses motion. Pick it up or shake it first.
 
 1. Go to **Settings** → **Devices & Services**
 2. Click **+ Add Integration**
 3. Search for "Flitsmeister DOT"
-4. Follow the configuration steps:
-
-### Step 1: Connection Information
-
-Enter the required connection details:
-
-- **Host/IP Address:** The hostname or IP address of your device/service
-- **API Key/Token:** Your authentication credentials (if applicable)
-- **Port:** Connection port (default: 8080)
-
-Click **Submit** to test the connection.
-
-### Step 2: Configuration Options
-
-Configure optional settings:
-
-- **Name:** Friendly name for this integration instance
-
-Click **Submit** to complete setup.
+4. Pick the discovered DOT, or enter its Bluetooth address
+5. Home Assistant connects once to check the DOT, then finishes
 
 ## What Gets Created
 
-After successful setup, the integration creates:
+### Device
 
-### Devices
-
-- **Device Name:** Main device representing your connected service/hardware
-  - Model information
-  - Software version
-  - Configuration URL (link to device web interface)
+One device per DOT, with the manufacturer, model, firmware version and serial number the DOT reports.
 
 ### Entities
 
-The following entities are automatically created:
+- `sensor.flitsmeister_dot_battery`: battery level
+- `sensor.flitsmeister_dot_charging`: unplugged, charging, plugged in
+- `sensor.flitsmeister_dot_motion`: parked, driving
+- `sensor.flitsmeister_dot_speech_language`: the voice language (diagnostic)
+- `select.flitsmeister_dot_volume`, `select.flitsmeister_dot_brightness`, `select.flitsmeister_dot_led_orientation`
+- `event.flitsmeister_dot_red_button`, `event.flitsmeister_dot_blue_button`: short and long presses
 
-#### Sensors
-
-- `sensor.<device_name>_<sensor_name>` - Descriptive sensor measurements
-- More sensors as applicable to your setup
-
-#### Binary Sensors
-
-- `binary_sensor.<device_name>_<sensor_name>` - On/off status indicators
-
-#### Switches
-
-- `switch.<device_name>_<switch_name>` - Controllable on/off switches
-
-#### Other Platforms
-
-Additional entities may be created depending on your device capabilities.
+[CONFIGURATION.md](./CONFIGURATION.md) lists every value and both actions.
 
 ## First Steps
 
-### Dashboard Cards
-
-Add entities to your dashboard:
-
-1. Go to your dashboard
-2. Click **Edit Dashboard** → **Add Card**
-3. Choose card type (e.g., "Entities", "Glance")
-4. Select entities from "Flitsmeister DOT"
-
-Example entities card:
+### Dashboard card
 
 ```yaml
 type: entities
 title: Flitsmeister DOT
 entities:
-  - sensor.device_name_sensor
-  - binary_sensor.device_name_connectivity
-  - switch.device_name_switch
+  - sensor.flitsmeister_dot_battery
+  - sensor.flitsmeister_dot_charging
+  - sensor.flitsmeister_dot_motion
+  - select.flitsmeister_dot_volume
 ```
 
-### Automations
+### A first automation
 
-Use the integration in automations:
-
-**Example - Trigger on sensor change:**
+Play the speed trap alert when the red button gets a short press:
 
 ```yaml
 automation:
-  - alias: "React to sensor value"
+  - alias: "DOT red button plays the speed trap alert"
     trigger:
       - trigger: state
-        entity_id: sensor.device_name_sensor
+        entity_id: event.flitsmeister_dot_red_button
+    condition:
+      - condition: state
+        entity_id: event.flitsmeister_dot_red_button
+        attribute: event_type
+        state: short_press
     action:
-      - action: notify.notify
+      - action: flitsmeister_dot.play_animation
         data:
-          message: "Sensor changed to {{ trigger.to_state.state }}"
-```
-
-**Example - Control switch based on time:**
-
-```yaml
-automation:
-  - alias: "Turn on in morning"
-    trigger:
-      - trigger: time
-        at: "07:00:00"
-    action:
-      - action: switch.turn_on
-        target:
-          entity_id: switch.device_name_switch
+          device_id: your_dot_device_id
+          preset: speed_trap
 ```
 
 ## Troubleshooting
 
-### Connection Failed
+### Setup fails to connect
 
-If setup fails with connection errors:
+1. Wake the DOT by picking it up or shaking it
+2. Keep it within Bluetooth range of the adapter or proxy Home Assistant uses
+3. Close the Flitsmeister phone app, since the DOT accepts one connection at a time
+4. Check the Home Assistant log for the reason
 
-1. Verify the host/IP address is correct and reachable
-2. Check that the API key/token is valid
-3. Ensure no firewall is blocking the connection
-4. Check Home Assistant logs for detailed error messages
+### Entities show "Unavailable"
 
-### Entities Not Updating
-
-If entities show "Unavailable" or don't update:
-
-1. Check that the device/service is online
-2. Verify API credentials haven't expired
-3. Review logs: **Settings** → **System** → **Logs**
-4. Try reloading the integration
+The DOT is asleep or out of range. It reconnects on its own once it wakes up, which takes up to about a minute.
 
 ### Debug Logging
-
-Enable debug logging to troubleshoot issues:
 
 ```yaml
 logger:
   default: warning
   logs:
     custom_components.flitsmeister_dot: debug
+    flitsmeister_dot_ble: debug
 ```
 
-Add this to `configuration.yaml`, restart, and reproduce the issue. Check logs for detailed information.
+Add this to `configuration.yaml`, restart, and reproduce the issue.
 
 ## Next Steps
 
-- See [CONFIGURATION.md](./CONFIGURATION.md) for detailed configuration options
+- See [CONFIGURATION.md](./CONFIGURATION.md) for every entity, action and the connection behavior
 - See [EXAMPLES.md](./EXAMPLES.md) for more automation examples
 - Report issues at [GitHub Issues](https://github.com/DaanVervacke/hass-flitsmeister-dot/issues)
 
 ## Support
-
-For help and discussion:
 
 - [GitHub Discussions](https://github.com/DaanVervacke/hass-flitsmeister-dot/discussions)
 - [Home Assistant Community Forum](https://community.home-assistant.io/)

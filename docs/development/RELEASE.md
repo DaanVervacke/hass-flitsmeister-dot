@@ -144,7 +144,7 @@ happen — is documented in the [`ha-release`](../../.agents/skills/ha-release/S
 The short version:
 
 ```bash
-git commit -m "feat(sensor): add air quality index sensor"  # Conventional Commits
+git commit -m "feat(sensor): add speech language sensor"  # Conventional Commits
 # push to main — release-please opens or updates the release PR automatically
 ./script/release-notes           # preview enhanced notes
 ./script/release-notes --apply   # write them into the PR body

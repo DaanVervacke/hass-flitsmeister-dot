@@ -6,87 +6,76 @@ This document describes the technical architecture of the Flitsmeister DOT custo
 
 ```text
 custom_components/flitsmeister_dot/
-├── __init__.py              # Integration setup and unload
+├── __init__.py              # Integration setup, unload and PLATFORMS
 ├── config_flow.py           # Config flow entry point
-├── const.py                 # Constants and configuration keys
-├── coordinator/             # Data update coordinator package
-│   ├── __init__.py          # Exports FlitsmeisterDotDataUpdateCoordinator
-│   └── base.py              # Main coordinator class
-├── data.py                  # Data classes and type definitions
-├── diagnostics.py           # Diagnostic data for troubleshooting
+├── const.py                 # Constants
+├── coordinator/             # The BLE session coordinator
+│   ├── __init__.py          # Exports FlitsmeisterDotCoordinator
+│   └── base.py              # Connects, pushes values, reconnects
+├── data.py                  # The typed config entry
+├── diagnostics.py           # Redacted diagnostics
 ├── entity/                  # Base entity package
 │   ├── __init__.py          # Exports FlitsmeisterDotEntity
-│   └── base.py              # Base entity class implementation
-├── icons.json               # Entity and service action icons
-├── manifest.json            # Integration metadata
-├── repairs.py               # Repair flows for fixing issues
-├── services.yaml            # Service action definitions (legacy filename)
-├── api/                     # External API communication
-│   ├── __init__.py
-│   └── client.py            # API client implementation
+│   └── base.py              # Device info, unique IDs, write errors
+├── icons.json               # Entity and action icons
+├── manifest.json            # Integration metadata and Bluetooth matchers
+├── repairs.py               # Repair flows
+├── services.yaml            # Action definitions (legacy filename)
 ├── config_flow_handler/     # Config flow implementation
 │   ├── __init__.py          # Package exports
-│   ├── config_flow.py       # Main config flow (user, reauth, reconfigure)
-│   ├── options_flow.py      # Options flow
+│   ├── config_flow.py       # Bluetooth discovery, picker, manual address
 │   ├── schemas/             # probatio schemas
-│   │   ├── __init__.py      # Schema exports
-│   │   ├── config.py        # Config flow schemas
-│   │   └── options.py       # Options flow schemas
-│   └── validators/          # Input validation
-│       ├── __init__.py      # Validator exports
-│       └── credentials.py   # Credential validation
-├── service_actions/         # Service action implementations
-│   ├── __init__.py          # Registration in async_setup()
-│   └── refresh_data.py      # The refresh_data handler
-├── translations/            # Localization files
-│   └── en.json              # English translations
-└── <platform>/              # Platform-specific implementations
-    ├── __init__.py          # Platform setup and PARALLEL_UPDATES
-    └── <entity>.py          # Entity descriptions and entity class
+│   │   ├── __init__.py
+│   │   └── config.py        # Address and picker forms
+│   └── validators/
+│       ├── __init__.py
+│       └── device.py        # Address format check and one test connection
+├── event/                   # Red and blue button event entities
+├── select/                  # Volume, brightness, LED orientation
+├── sensor/                  # Battery, charging, motion, speech language
+├── service_actions/         # Actions, registered in async_setup()
+│   ├── __init__.py
+│   ├── play_animation.py
+│   ├── play_progress.py
+│   └── presets.py           # Preset name to library animation
+├── translations/
+│   └── en.json
+└── utils/
+    └── dot_errors.py        # Library errors to translated user errors
 ```
 
-`entity_utils/` and `utils/` are part of the permitted package set in
-[`AGENTS.md`](../../AGENTS.md) but do not exist until something needs them — an entity helper
-used by three or more entity classes, or an integration-wide utility.
+There is no `api/` package. The device protocol lives in the PyPI library
+[`flitsmeister-dot-ble`](https://pypi.org/project/flitsmeister-dot-ble/), which plays the role of the API client.
 
 ## Core Components
 
-### Data Update Coordinator
+### Session Coordinator
 
 **Directory:** `coordinator/`
 
-The coordinator fetches the device state once per interval and hands the same payload to every
-entity, so no entity ever calls the API itself.
+The coordinator holds one Bluetooth session with the DOT and pushes every decoded value to the entities, so no entity
+ever talks to the device itself.
 
 **Core functionality:**
 
-- A fixed one-hour update interval (`UPDATE_INTERVAL`), chosen by the developer rather than the user
-- Translation of API client exceptions into `ConfigEntryAuthFailed` and `UpdateFailed`
-- Raising and clearing the repair issue for the deprecated API version
+- No update interval. The DOT pushes values over the live connection, and `async_set_updated_data` hands them on.
+  Notifications that change nothing are dropped, so unchanged values do not rewrite every state.
+- The connect sequence writes the stored volume, plays the startup animation and reads the settings, like the app.
+- A lost session marks every entity unavailable and starts a reconnect loop: right away, then after 5, 10, 30 and
+  every 60 seconds (`RECONNECT_DELAYS`), as long as Home Assistant still sees the DOT. A new advertisement restarts the
+  loop once the DOT was out of reach.
+- Unloading the entry cancels the loop and any connect attempt still running.
 
-**Key class:** `FlitsmeisterDotDataUpdateCoordinator` (exported from `coordinator/__init__.py`)
+**Key class:** `FlitsmeisterDotCoordinator` (exported from `coordinator/__init__.py`)
 
-Retries and backoff are **not** implemented here. Home Assistant already retries `UpdateFailed`
-with exponential backoff, and failures are logged by Home Assistant, not by the coordinator.
+Home Assistant only reports an advertisement when its content changes, and the DOT always sends the same one. That is
+why the coordinator cannot wait for advertisements to reconnect, and runs its own loop instead.
 
-**Design rationale:**
+### Device Library
 
-The coordinator is a package rather than a single file so that transform helpers, a cache or a
-push listener can be added as separate modules once they are needed — each staying under the
-200–400 line guideline and testable on its own.
-
-### API Client
-
-**Directory:** `api/`
-
-Handles all communication with external APIs or devices. Implements:
-
-- Async HTTP requests using `aiohttp`
-- Connection management and timeouts
-- Authentication handling
-- Error translation to custom exceptions
-
-**Key class:** `FlitsmeisterDotApiClient`
+The protocol, the connection lifecycle and the button press resolution come from `flitsmeister-dot-ble`. The
+coordinator only calls its `FlitsmeisterDotClient`. `utils/dot_errors.py` turns the library's errors into translated
+Home Assistant errors for entities and actions.
 
 ### Config Flow
 
@@ -97,25 +86,20 @@ is organized modularly to support complex flows without becoming monolithic.
 
 **Structure:**
 
-- `config_flow.py`: Main flow (user setup, reauth, reconfigure)
-- `options_flow.py`: Options flow for post-setup configuration
-- `schemas/`: probatio schemas for all forms
-- `validators/`: Validation logic separated from flow logic
+- `config_flow.py`: Bluetooth discovery, a picker for discovered DOTs and manual address entry
+- `schemas/`: probatio schemas for the forms
+- `validators/`: the address format check and one test connection to the DOT
 
 **Supported flows:**
 
-- Initial user setup with validation
-- Options flow for the filter replacement threshold
-- Reauthentication flow for expired credentials
-- Reconfiguration of the stored credentials
+- Bluetooth discovery with a confirm step
+- Picking a discovered DOT
+- Manual address entry, checked by connecting once
 
-A subentry flow goes in `config_flow_handler/subentry_flow.py` when the integration grows to
-need one; see [`ha-config-flow`](../../.agents/skills/ha-config-flow/SKILL.md).
+There is no options flow, reauth or reconfigure: the DOT has no credentials and no settings that live in the config
+entry.
 
-**Key classes:**
-
-- `FlitsmeisterDotConfigFlowHandler` (main flow)
-- `FlitsmeisterDotOptionsFlow` (options)
+**Key class:** `FlitsmeisterDotConfigFlowHandler`
 
 ### Base Entity
 
@@ -132,7 +116,7 @@ Provides common functionality for all entities in the integration:
 
 ## Platform Organization
 
-Each platform (sensor, binary_sensor, switch, etc.) follows this pattern:
+Each platform (sensor, select, event) follows this pattern:
 
 ```text
 <platform>/
@@ -154,7 +138,7 @@ Platform entities inherit from both:
          │
          ▼
 ┌─────────────────┐
-│   Coordinator   │ ← Fetches data from API every 5 min
+│   Coordinator   │ ← Holds the BLE session, receives pushed values
 └────────┬────────┘
          │
          ▼
@@ -166,7 +150,7 @@ Platform entities inherit from both:
     │                     │
     ▼                     ▼
 ┌─────────┐         ┌─────────┐
-│ Sensor  │         │ Switch  │ ← Entities read from coordinator
+│ Sensor  │         │ Select  │ ← Entities read from coordinator
 └─────────┘         └─────────┘
 ```
 
@@ -215,16 +199,17 @@ To add new functionality:
 2. Define service action in `services.yaml` (legacy filename) with schema
 3. Register service action in `__init__.py:async_setup()` (NOT `async_setup_entry`)
 
-### Modifying Data Structure
+### Exposing a New Device Value
 
-1. Update coordinator data type in `coordinator.py`
-2. Adjust API client response parsing in `api/client.py`
-3. Update entity property implementations to match new structure
+1. Add the value to the library's `DotState` in `flitsmeister-dot-ble` and release it
+2. Raise the `flitsmeister-dot-ble` requirement in `manifest.json` and `requirements.txt`
+3. Add an entity description whose `value_fn` reads the new field
 
 ## Testing Strategy
 
 - **Unit tests:** Test individual functions and classes in isolation
-- **Integration tests:** Test coordinator with mocked API
+- **Integration tests:** Set up the entry against an in-memory fake DOT (`FakeDotClient` in `tests/conftest.py`)
+  and a fake Bluetooth layer that fires advertisements and takes the DOT out of reach
 - **Fixtures:** Shared test fixtures in `tests/conftest.py`
 
 Tests mirror the source structure under `tests/`.
@@ -233,7 +218,8 @@ Tests mirror the source structure under `tests/`.
 
 Core dependencies (see `manifest.json`):
 
-- `aiohttp` - Async HTTP client
-- Home Assistant 2025.7.0+ - Platform requirements
+- `flitsmeister-dot-ble` - The DOT protocol and BLE client
+- The `bluetooth` integration - Discovery, scanners and connections
+- Home Assistant 2026.10.0+ - Platform requirements
 
 Development dependencies (see `requirements_dev.txt`, `requirements_test.txt`).

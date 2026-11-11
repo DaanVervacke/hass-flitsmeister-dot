@@ -1,236 +1,142 @@
 # Configuration Reference
 
-This document describes all configuration options and settings available in the Flitsmeister DOT custom integration.
+This document describes how the Flitsmeister DOT integration is set up, which entities and actions it provides, and
+how it behaves while the DOT sleeps.
 
-## Integration Configuration
+## Setup
 
-### Initial Setup Options
+The integration talks to the DOT over Bluetooth Low Energy. There is nothing to sign in to: no account, password or
+API key.
 
-These options are configured during initial setup via the Home Assistant UI.
-
-#### Connection Settings
-
-| Option      | Type    | Required | Default | Description                                  |
-| ----------- | ------- | -------- | ------- | -------------------------------------------- |
-| **Host**    | string  | Yes      | -       | Hostname or IP address of the device/service |
-| **Port**    | integer | No       | 8080    | Connection port                              |
-| **API Key** | string  | Yes\*    | -       | Authentication key or token                  |
-| **Use SSL** | boolean | No       | false   | Enable HTTPS connection                      |
-
-\*Required if the device/service requires authentication.
-
-#### Update Settings
-
-| Option   | Type   | Required | Default  | Description                                |
-| -------- | ------ | -------- | -------- | ------------------------------------------ |
-| **Name** | string | No       | "Device" | Friendly name for the integration instance |
-
-### Options Flow (Reconfiguration)
-
-After initial setup, you can modify settings:
+### Adding the DOT
 
 1. Go to **Settings** → **Devices & Services**
-2. Find "Flitsmeister DOT"
-3. Click **Configure**
-4. Modify settings
-5. Click **Submit**
+2. Click **+ Add Integration** and search for "Flitsmeister DOT"
+3. Pick the DOT from the discovered devices, or choose **Enter the Bluetooth address** and type it, like
+   `AA:BB:CC:DD:EE:FF`
 
-**Available options:**
+Home Assistant connects to the DOT once before it finishes, to check that the address really reaches a DOT. The DOT
+sleeps while it is parked and only answers after it senses motion, so pick it up or shake it before you start.
 
-- Filter replacement threshold: the remaining filter life, in percent, below which the filter replacement warning turns on
-- Name/identifier
-- Connection timeout
-- Additional features (device-specific)
+A DOT that advertises nearby is also offered automatically under **Settings** → **Devices & Services** as a discovered
+device.
 
-## Entity Configuration
+### Setup fields
 
-### Entity Customization
+| Field                 | Required | Description                                                    |
+| --------------------- | -------- | -------------------------------------------------------------- |
+| **Bluetooth address** | Yes      | The address of the DOT, only asked when you skip the discovery |
 
-Customize entities via the UI or `configuration.yaml`:
+There are no options to change after setup. The integration has no options dialog.
 
-#### Via Home Assistant UI
+### More than one DOT
 
-1. Go to **Settings** → **Devices & Services** → **Entities**
-2. Find and click the entity
-3. Click the settings icon
-4. Modify:
-   - Entity ID
-   - Name
-   - Icon
-   - Device class (for applicable entities)
-   - Area assignment
+Add each DOT as its own integration entry. Every DOT gets its own device and entities.
 
-#### Via configuration.yaml
+## Entities
 
-```yaml
-homeassistant:
-  customize:
-    sensor.device_name_sensor:
-      friendly_name: "Custom Sensor Name"
-      icon: mdi:custom-icon
-      unit_of_measurement: "units"
-```
+| Entity          | Type   | Values                                      |
+| --------------- | ------ | ------------------------------------------- |
+| Battery         | sensor | 0 to 100 %                                  |
+| Charging        | sensor | Unplugged, Charging, Plugged in             |
+| Motion          | sensor | Parked, Driving                             |
+| Speech language | sensor | English, Dutch, German, French (diagnostic) |
+| Volume          | select | Silent, Low, Normal, Hard                   |
+| Brightness      | select | 10 % to 100 % in steps of 10                |
+| LED orientation | select | Normal, Upside down                         |
+| Red button      | event  | Short press, Long press                     |
+| Blue button     | event  | Short press, Long press                     |
 
-### Disabling Entities
+"Plugged in" means USB power is connected while the charger is outside its main charging phase. The battery level can
+still rise in that state, so it does not mean the battery is full.
 
-If you don't need certain entities:
+The DOT never reports its volume back. Home Assistant remembers the volume you chose and writes it every time the DOT
+connects, also after a restart.
 
-1. Go to **Settings** → **Devices & Services** → **Entities**
-2. Find the entity
-3. Click it, then click **Settings** icon
-4. Toggle **Enable entity** off
+Manufacturer, model, firmware version and serial number appear on the device page, not as entities.
 
-Disabled entities won't update or consume resources.
+## Actions
 
-## Services
+Both actions target the DOT device and fail with a clear error while the DOT is asleep.
 
-The integration provides the following services:
+### `flitsmeister_dot.play_animation`
 
-### `flitsmeister_dot.refresh_data`
+Plays one of the alerts the Flitsmeister app shows, with the same LED pattern and sound.
 
-Fetch the current device state immediately instead of waiting for the next poll.
-
-**Service data:**
-
-| Parameter         | Type   | Required | Description                        |
-| ----------------- | ------ | -------- | ---------------------------------- |
-| `config_entry_id` | string | Yes      | The configuration entry to refresh |
-
-The action returns `refreshed_at`, `success` and `value_count`, so an automation can react to
-whether the refresh actually produced data.
-
-**Example:**
+| Field       | Required | Description                                       |
+| ----------- | -------- | ------------------------------------------------- |
+| `device_id` | Yes      | The DOT that plays the animation                  |
+| `preset`    | Yes      | The alert, for example `speed_trap` or `accident` |
 
 ```yaml
-action: flitsmeister_dot.refresh_data
+action: flitsmeister_dot.play_animation
 data:
-  config_entry_id: 01JG3T2Q6Z9K4V8P0N5R7X2M1A
+  device_id: your_dot_device_id
+  preset: speed_trap
 ```
 
-### Using Services in Automations
+The presets cover every alert of the app: speed traps and cameras, average speed checks, traffic jams, police,
+roadworks, emergency vehicles, wrong way drivers, incidents such as `accident` or `animal_on_the_road`, lane closures,
+and utilities like `startup`, `fade_out` and `updating`.
+
+### `flitsmeister_dot.play_progress`
+
+Lights the LED ring to show how close the car is to a hazard.
+
+| Field       | Required | Description                                                        |
+| ----------- | -------- | ------------------------------------------------------------------ |
+| `device_id` | Yes      | The DOT that plays the animation                                   |
+| `color`     | Yes      | The color of the lit LEDs, for example `warning` or `speed_trap`   |
+| `fraction`  | Yes      | How much of the ring is lit, 0 to 100 %                            |
+| `blink`     | Yes      | Blink the lit LEDs and play the reduce speed sound, off by default |
 
 ```yaml
-automation:
-  - alias: "Refresh at sunset"
-    trigger:
-      - trigger: sun
-        event: sunset
-    action:
-      - action: flitsmeister_dot.refresh_data
-        data:
-          config_entry_id: 01JG3T2Q6Z9K4V8P0N5R7X2M1A
+action: flitsmeister_dot.play_progress
+data:
+  device_id: your_dot_device_id
+  color: warning
+  fraction: 75
+  blink: false
 ```
 
-## Advanced Configuration
+## Connection behavior
 
-### Multiple Instances
+The DOT pushes its values over a live Bluetooth connection. Home Assistant does not poll it.
 
-You can add multiple instances of this integration for different devices:
+- **While the DOT is awake and connected**, values update the moment they change. A connected DOT stays awake, also
+  while it is parked.
+- **When the connection drops**, the entities turn unavailable and the integration reconnects on its own. It tries
+  right away, then after 5, 10 and 30 seconds, and every 60 seconds after that, as long as Home Assistant still sees
+  the DOT.
+- **When the DOT sleeps**, it stops advertising and cannot be reached. It comes back on its own once it senses motion,
+  which in the car happens as soon as you drive.
 
-1. Go to **Settings** → **Devices & Services**
-2. Click **+ Add Integration**
-3. Search for "Flitsmeister DOT"
-4. Configure with different connection details
+The DOT accepts one Bluetooth connection at a time. While Home Assistant is connected, the Flitsmeister phone app is
+not.
 
-Each instance creates separate entities with unique entity IDs.
-
-### Network Configuration
-
-If the device is on a different network or behind a firewall:
-
-- Ensure ports are open (default: 8080)
-- Configure port forwarding if needed
-- Consider VPN for remote access
-- Some devices may require static IP addresses
-
-### Polling Behavior
-
-The integration polls the device at a fixed interval chosen to suit it; the interval is not configurable. To fetch
-the current state sooner, call the `refresh_data` action, or use Home Assistant's
-[polling options](https://www.home-assistant.io/common-tasks/general/#defining-a-custom-polling-interval) to disable
-polling and drive updates from an automation.
-
-## Diagnostic Data
-
-The integration provides diagnostic data for troubleshooting:
+## Diagnostic data
 
 1. Go to **Settings** → **Devices & Services**
-2. Find "Flitsmeister DOT"
-3. Click on the device
-4. Click **Download Diagnostics**
+2. Find "Flitsmeister DOT" and open the 3 dots menu
+3. Click **Download diagnostics**
 
-Diagnostic data includes:
+The download holds the connection state, the stored volume and the last values the DOT reported. The Bluetooth address
+and the serial number are redacted.
 
-- Connection status
-- Last update timestamp
-- API response data
-- Entity states
-- Error history
+## Troubleshooting
 
-**Privacy note:** Diagnostic data may contain sensitive information. Review before sharing.
+### Setup says it cannot connect
 
-## Blueprints
+The DOT is probably asleep. Pick it up or shake it, then try again within a minute. Check that the DOT is within
+Bluetooth range of the adapter or proxy that Home Assistant uses.
 
-The integration works with Home Assistant Blueprints for reusable automations:
+### Entities stay unavailable
 
-### Example Blueprint
+Wake the DOT. Each connect attempt takes up to about a minute, so give it that long. The log line
+`Connecting to the DOT at ... failed, retrying` gives the reason when an attempt fails.
 
-```yaml
-blueprint:
-  name: Flitsmeister DOT Alert
-  description: Send notification when sensor exceeds threshold
-  domain: automation
-  input:
-    sensor_entity:
-      name: Sensor
-      selector:
-        entity:
-          domain: sensor
-          integration: flitsmeister_dot
-    threshold:
-      name: Threshold
-      selector:
-        number:
-          min: 0
-          max: 100
+## Related documentation
 
-trigger:
-  - trigger: numeric_state
-    entity_id: !input sensor_entity
-    above: !input threshold
-
-action:
-  - action: notify.notify
-    data:
-      message: "Sensor exceeded threshold!"
-```
-
-## Configuration Examples
-
-See [EXAMPLES.md](./EXAMPLES.md) for complete automation and dashboard examples.
-
-## Troubleshooting Configuration
-
-### Config Entry Fails to Load
-
-If the integration fails to load after configuration:
-
-1. Check Home Assistant logs for errors
-2. Verify connection details are correct
-3. Test connectivity from Home Assistant to the device
-4. Try removing and re-adding the integration
-
-### Options Don't Save
-
-If configuration changes aren't persisted:
-
-1. Check for validation errors in the UI
-2. Ensure values are within allowed ranges
-3. Review logs for detailed error messages
-4. Try restarting Home Assistant
-
-## Related Documentation
-
-- [Getting Started](./GETTING_STARTED.md) - Installation and initial setup
-- [Examples](./EXAMPLES.md) - Automation and dashboard examples
-- [GitHub Issues](https://github.com/DaanVervacke/hass-flitsmeister-dot/issues) - Report problems
+- [Getting Started](./GETTING_STARTED.md): installation and first setup
+- [Examples](./EXAMPLES.md): automation and dashboard examples
+- [GitHub Issues](https://github.com/DaanVervacke/hass-flitsmeister-dot/issues): report problems

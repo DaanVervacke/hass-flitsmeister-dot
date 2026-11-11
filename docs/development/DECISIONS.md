@@ -47,7 +47,7 @@ Each decision is documented with:
 
 **Context:** The DOT sleeps while parked and advertises in bursts after accelerometer motion. It drops a connection that only subscribes and reads after about 4 seconds, and it accepts one connection at a time, so Home Assistant and the phone app exclude each other.
 
-**Decision:** The coordinator listens for advertisements, connects when the DOT wakes and stays connected, pushing every decoded value to the entities. A lost session marks the entities unavailable until the next advertisement reconnects. The connect sequence writes the stored volume and plays the startup animation, like the app, which also keeps the link past the idle drop.
+**Decision:** The coordinator listens for advertisements, connects when the DOT wakes and stays connected, pushing every decoded value to the entities. A lost session marks the entities unavailable and starts a reconnect loop with growing delays, because Home Assistant only reports an advertisement when its content changes and the DOT always sends the same one. The connect sequence writes the stored volume and plays the startup animation, like the app, which also keeps the link past the idle drop.
 
 **Rationale:**
 
@@ -66,6 +66,8 @@ Each decision is documented with:
 ### Use DataUpdateCoordinator for All Data Fetching
 
 **Date:** 2025-11-29 (Template initialization)
+
+**Status:** Superseded by "Stay connected while the DOT is awake". The coordinator is still a `DataUpdateCoordinator`, but it is pushed to, with no update interval.
 
 **Context:** The integration needs to fetch data from an external API and share it with multiple entities. Home Assistant provides several patterns for this.
 
@@ -91,6 +93,8 @@ Each decision is documented with:
 ### Separate API Client from Coordinator
 
 **Date:** 2025-11-29 (Template initialization)
+
+**Status:** Superseded by "Use flitsmeister-dot-ble from PyPI". There is no `api/` package, and the library plays the role of the client.
 
 **Context:** The coordinator needs to fetch data, but business logic should be separated from data transport.
 
@@ -161,21 +165,21 @@ Each decision is documented with:
 
 ### State Restoration
 
-**Status:** Not yet implemented
+**Status:** Implemented for the volume
 
-Consider implementing state restoration for switches and configurable settings to maintain state across Home Assistant restarts when the external device is unavailable.
+The DOT never reports its volume, so the volume select restores its last state after a restart and the coordinator writes it on every connect. Brightness and orientation are read back from the DOT and need no restoration.
 
 ### Multi-Device Support
 
-**Status:** Not yet implemented
+**Status:** One config entry per DOT
 
-Current architecture assumes single device per config entry. If multi-device support is needed, coordinator data structure will need redesign to map device ID → data.
+Every DOT is its own config entry with its own coordinator and device, keyed by its Bluetooth address.
 
 ### Polling vs. Push
 
-**Status:** Uses polling
+**Status:** Push
 
-Currently implements polling-based updates. If the API supports webhooks or WebSocket, consider implementing push-based updates for real-time responsiveness.
+The DOT pushes its values over a live BLE session. See "Stay connected while the DOT is awake".
 
 ---
 
