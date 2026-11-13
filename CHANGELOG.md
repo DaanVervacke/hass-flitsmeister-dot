@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/DaanVervacke/hass-flitsmeister-dot/compare/v0.1.2...v0.1.3) (2026-11-13)
+
+
+### Features
+
+* **service-actions:** play a chosen sound with play_progress ([#4](https://github.com/DaanVervacke/hass-flitsmeister-dot/issues/4)) ([c7a0ce3](https://github.com/DaanVervacke/hass-flitsmeister-dot/commit/c7a0ce356506336cd881f4b7e17f060bf04fec1a))
+
 ## [0.1.2](https://github.com/DaanVervacke/hass-flitsmeister-dot/compare/v0.1.1...v0.1.2) (2026-11-13)
 
 
