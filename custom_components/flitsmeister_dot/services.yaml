@@ -66,8 +66,7 @@ play_progress:
           integration: flitsmeister_dot
     color:
       name: Color
-      description: The color of the lit LEDs.
-      required: true
+      description: One of the DOT's own colors for the lit LEDs. Leave it empty when you pick an RGB color.
       example: warning
       selector:
         select:
@@ -81,6 +80,12 @@ play_progress:
             - pro
             - success
             - warning
+    rgb_color:
+      name: RGB color
+      description: Any color for the lit LEDs. Use it in place of a named color.
+      example: "[255, 85, 0]"
+      selector:
+        color_rgb:
     fraction:
       name: Progress
       description: How much of the LED ring is lit, as a percentage.
