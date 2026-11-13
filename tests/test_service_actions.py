@@ -199,3 +199,91 @@ async def test_play_progress_rejects_invalid_color(
             {"device_id": await _device_id(hass, init_integration), "fraction": 50, **colors},
             blocking=True,
         )
+
+
+async def test_play_progress_sound(
+    init_integration: MockConfigEntry,
+    hass: HomeAssistant,
+    wake_dot: Any,
+) -> None:
+    """The chosen sound plays with the progress LEDs."""
+    client = await wake_dot()
+
+    await hass.services.async_call(
+        DOMAIN,
+        "play_progress",
+        {
+            "device_id": await _device_id(hass, init_integration),
+            "rgb_color": [0, 255, 0],
+            "fraction": 50,
+            "sound": "confirm",
+        },
+        blocking=True,
+    )
+
+    played = client.played_animations[-1]
+    assert played.type is DotAnimationType.PROGRESSION_TOP_TO_BOTTOM
+    assert played.primary_sound is DotSound.SFX_CONFIRM
+
+
+async def test_play_progress_sound_replaces_the_blink_sound(
+    init_integration: MockConfigEntry,
+    hass: HomeAssistant,
+    wake_dot: Any,
+) -> None:
+    """A chosen sound replaces the reduce speed sound of a blink."""
+    client = await wake_dot()
+
+    await hass.services.async_call(
+        DOMAIN,
+        "play_progress",
+        {
+            "device_id": await _device_id(hass, init_integration),
+            "color": "danger",
+            "fraction": 0,
+            "blink": True,
+            "sound": "error",
+        },
+        blocking=True,
+    )
+
+    played = client.played_animations[-1]
+    assert played.type is DotAnimationType.PROGRESSION_BLINK
+    assert played.primary_sound is DotSound.SFX_ERROR
+
+
+async def test_play_progress_without_sound_stays_silent(
+    init_integration: MockConfigEntry,
+    hass: HomeAssistant,
+    wake_dot: Any,
+) -> None:
+    """Without a sound the progress LEDs play silently."""
+    client = await wake_dot()
+
+    await hass.services.async_call(
+        DOMAIN,
+        "play_progress",
+        {"device_id": await _device_id(hass, init_integration), "color": "success", "fraction": 50},
+        blocking=True,
+    )
+
+    assert client.played_animations[-1].primary_sound is None
+
+
+async def test_play_progress_rejects_unknown_sound(
+    init_integration: MockConfigEntry,
+    hass: HomeAssistant,
+) -> None:
+    """A sound outside the list is rejected."""
+    with pytest.raises(probatio.Invalid):
+        await hass.services.async_call(
+            DOMAIN,
+            "play_progress",
+            {
+                "device_id": await _device_id(hass, init_integration),
+                "color": "success",
+                "fraction": 50,
+                "sound": "speech_roadworks",
+            },
+            blocking=True,
+        )

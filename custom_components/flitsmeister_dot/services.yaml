@@ -103,3 +103,26 @@ play_progress:
       default: false
       selector:
         boolean:
+    sound:
+      name: Sound
+      description: A sound the DOT plays with the LEDs. It replaces the reduce speed sound when the LEDs blink.
+      example: confirm
+      selector:
+        select:
+          translation_key: sound
+          options:
+            - error
+            - exit
+            - sound_logo_short
+            - confirm
+            - ambulance
+            - emergency_vehicle
+            - end_of_report
+            - police_hotspot
+            - reduce_speed
+            - avg_speed_check_start
+            - safety_notification_2
+            - speed_camera
+            - avg_speed_check_end
+            - wrong_direction
+            - wrong_way_driver

@@ -90,9 +90,15 @@ Lights the LED ring to show how close the car is to a hazard.
 | `rgb_color` | One of   | Any color as red, green and blue from 0 to 255                     |
 | `fraction`  | Yes      | How much of the ring is lit, 0 to 100 %                            |
 | `blink`     | No       | Blink the lit LEDs and play the reduce speed sound, off by default |
+| `sound`     | No       | A sound to play with the LEDs, for example `confirm`               |
 
 Give exactly one of `color` or `rgb_color`. The action rejects a call that has both or neither. The RGB color
 `[0, 0, 0]` is black and leaves the LEDs off.
+
+Without `sound` the LEDs light up silently. With `blink: true` the chosen sound replaces the reduce speed sound. The
+sounds are `error`, `exit`, `sound_logo_short`, `confirm`, `ambulance`, `emergency_vehicle`, `end_of_report`,
+`police_hotspot`, `reduce_speed`, `avg_speed_check_start`, `safety_notification_2`, `speed_camera`,
+`avg_speed_check_end`, `wrong_direction` and `wrong_way_driver`.
 
 ```yaml
 action: flitsmeister_dot.play_progress
