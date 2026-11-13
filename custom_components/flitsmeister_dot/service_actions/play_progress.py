@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import replace
 from typing import TYPE_CHECKING, Any
 
-from flitsmeister_dot_ble import DotColor, animations
+from flitsmeister_dot_ble import DotColor, DotSound, animations
 import probatio
 
 from custom_components.flitsmeister_dot.const import DOMAIN
@@ -18,7 +18,12 @@ if TYPE_CHECKING:
 
 ATTR_COLOR = "color"
 ATTR_RGB_COLOR = "rgb_color"
+ATTR_SOUND = "sound"
 COLOR_OPTIONS = [color.name.lower() for color in DotColor]
+SOUND_PREFIX = "SFX_"
+SOUND_OPTIONS = {
+    sound.name.removeprefix(SOUND_PREFIX).lower(): sound for sound in DotSound if sound.name.startswith(SOUND_PREFIX)
+}
 OPAQUE_ALPHA = 0xFF000000
 
 PLAY_PROGRESS_SCHEMA = probatio.All(
@@ -31,6 +36,7 @@ PLAY_PROGRESS_SCHEMA = probatio.All(
             ),
             probatio.Required("fraction"): probatio.All(int, probatio.Range(min=0, max=100)),
             probatio.Optional("blink", default=False): cv.boolean,
+            probatio.Optional(ATTR_SOUND): probatio.In(SOUND_OPTIONS),
         }
     ),
     cv.has_at_least_one_key(ATTR_COLOR, ATTR_RGB_COLOR),
@@ -63,4 +69,6 @@ async def async_handle_play_progress(hass: HomeAssistant, call: ServiceCall) -> 
         if call.data["blink"]
         else animations.progress(color=color, fraction=fraction)
     )
+    if ATTR_SOUND in call.data:
+        animation = replace(animation, primary_sound=SOUND_OPTIONS[call.data[ATTR_SOUND]])
     await async_run_dot_write(entry.runtime_data.async_play_animation(animation), "animation_failed")

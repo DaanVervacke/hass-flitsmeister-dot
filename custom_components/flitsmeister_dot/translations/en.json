@@ -180,6 +180,10 @@
         "blink": {
           "name": "Blink",
           "description": "Blink the lit LEDs and play the reduce speed sound, like the overspeed warning."
+        },
+        "sound": {
+          "name": "Sound",
+          "description": "A sound the DOT plays with the LEDs. It replaces the reduce speed sound when the LEDs blink."
         }
       }
     }
@@ -234,6 +238,25 @@
         "pro": "Pro (purple)",
         "success": "Success (dark green)",
         "warning": "Warning (orange)"
+      }
+    },
+    "sound": {
+      "options": {
+        "error": "Error",
+        "exit": "Exit",
+        "sound_logo_short": "Sound logo",
+        "confirm": "Confirm",
+        "ambulance": "Ambulance",
+        "emergency_vehicle": "Emergency vehicle",
+        "end_of_report": "End of report",
+        "police_hotspot": "Police hotspot",
+        "reduce_speed": "Reduce speed",
+        "avg_speed_check_start": "Average speed check start",
+        "safety_notification_2": "Safety notification",
+        "speed_camera": "Speed camera",
+        "avg_speed_check_end": "Average speed check end",
+        "wrong_direction": "Wrong direction",
+        "wrong_way_driver": "Wrong way driver"
       }
     }
   }

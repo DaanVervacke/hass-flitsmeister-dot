@@ -115,7 +115,8 @@ data:
 ```
 
 Set `blink: true` for the blinking overspeed warning with the reduce speed sound. Give `color` for one of the DOT's own
-colors, or `rgb_color` for any color, such as `rgb_color: [255, 85, 0]`. A call takes one of the two.
+colors, or `rgb_color` for any color, such as `rgb_color: [255, 85, 0]`. A call takes one of the two. Add
+`sound: confirm`, or another sound of the DOT, to play a sound with the LEDs.
 
 ## Button events
 
@@ -263,7 +264,7 @@ script/develop          # Home Assistant runs at http://localhost:8123
 >
 > - **AI assistance:** substantial
 > - **Human review:** partial, the maintainer decided the feature scope, entity list and connection model in a structured interview
-> - **Automated tests:** full suite passing, 179 tests covering setup, config flow, entities and actions against an in-memory fake device
+> - **Automated tests:** full suite passing, 183 tests covering setup, config flow, entities and actions against an in-memory fake device
 > - **Real-device or service testing:** not performed yet, pending verification against a live DOT
 > - **Maturity and known limitations:** first release, depends on the unofficial flitsmeister-dot-ble library, a firmware update can break the protocol
 >
