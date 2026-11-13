@@ -67,6 +67,8 @@ _git_fetch_tag() {
     return 1
 }
 
+activate_venv
+
 # Detect Home Assistant version to use
 if [ -n "${HA_VERSION:-}" ]; then
     # Use version from environment (DevContainer); resolve specifiers to concrete versions
@@ -156,8 +158,6 @@ if [[ "$(cat "$HA_CORE_DIR/.git/info/sparse-checkout")" != "$sparse_paths" ]]; t
     printf '%s\n' "$sparse_paths" >"$HA_CORE_DIR/.git/info/sparse-checkout"
     git -C "$HA_CORE_DIR" read-tree -mu HEAD
 fi
-
-activate_venv
 
 # Check if we have required dependencies
 log_info "Checking dependencies..."
