@@ -3,6 +3,7 @@
 from typing import Any
 
 from flitsmeister_dot_ble import DotAnimationType, DotColor, DotSound, animations
+import probatio
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -127,3 +128,74 @@ async def test_play_progress_blink_keeps_the_chosen_color(
     assert played.type is DotAnimationType.PROGRESSION_BLINK
     assert played.color == DotColor.SPEED_CAM
     assert played.primary_sound is DotSound.SFX_REDUCE_SPEED
+
+
+async def test_play_progress_rgb_color(
+    init_integration: MockConfigEntry,
+    hass: HomeAssistant,
+    wake_dot: Any,
+) -> None:
+    """An RGB color reaches the DOT as an opaque ARGB color."""
+    client = await wake_dot()
+
+    await hass.services.async_call(
+        DOMAIN,
+        "play_progress",
+        {
+            "device_id": await _device_id(hass, init_integration),
+            "rgb_color": [255, 85, 0],
+            "fraction": 50,
+        },
+        blocking=True,
+    )
+
+    assert client.played_animations[-1] == animations.progress(color=0xFFFF5500, fraction=0.5)
+
+
+async def test_play_progress_rgb_color_blink(
+    init_integration: MockConfigEntry,
+    hass: HomeAssistant,
+    wake_dot: Any,
+) -> None:
+    """Blinking keeps the RGB color."""
+    client = await wake_dot()
+
+    await hass.services.async_call(
+        DOMAIN,
+        "play_progress",
+        {
+            "device_id": await _device_id(hass, init_integration),
+            "rgb_color": [0, 255, 0],
+            "fraction": 25,
+            "blink": True,
+        },
+        blocking=True,
+    )
+
+    played = client.played_animations[-1]
+    assert played.type is DotAnimationType.PROGRESSION_BLINK
+    assert played.color == 0xFF00FF00
+
+
+@pytest.mark.parametrize(
+    "colors",
+    [
+        pytest.param({}, id="no_color"),
+        pytest.param({"color": "danger", "rgb_color": [255, 0, 0]}, id="both_colors"),
+        pytest.param({"rgb_color": [255, 0]}, id="two_channels"),
+        pytest.param({"rgb_color": [256, 0, 0]}, id="channel_out_of_range"),
+    ],
+)
+async def test_play_progress_rejects_invalid_color(
+    init_integration: MockConfigEntry,
+    hass: HomeAssistant,
+    colors: dict[str, Any],
+) -> None:
+    """The action needs exactly one valid color."""
+    with pytest.raises(probatio.Invalid):
+        await hass.services.async_call(
+            DOMAIN,
+            "play_progress",
+            {"device_id": await _device_id(hass, init_integration), "fraction": 50, **colors},
+            blocking=True,
+        )

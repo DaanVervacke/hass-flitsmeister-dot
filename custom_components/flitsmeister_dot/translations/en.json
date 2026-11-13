@@ -167,7 +167,11 @@
         },
         "color": {
           "name": "Color",
-          "description": "The color of the lit LEDs."
+          "description": "One of the DOT's own colors for the lit LEDs. Leave it empty when you pick an RGB color."
+        },
+        "rgb_color": {
+          "name": "RGB color",
+          "description": "Any color for the lit LEDs. Use it in place of a named color."
         },
         "fraction": {
           "name": "Progress",
