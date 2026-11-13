@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from custom_components.flitsmeister_dot.service_actions.play_progress import COLOR_OPTIONS
+from custom_components.flitsmeister_dot.service_actions.play_progress import COLOR_OPTIONS, SOUND_OPTIONS
 from custom_components.flitsmeister_dot.service_actions.presets import PRESET_ANIMATIONS
 
 SERVICES_YAML = Path(__file__).parent.parent / "custom_components" / "flitsmeister_dot" / "services.yaml"
@@ -23,3 +23,8 @@ def test_preset_options_match_the_presets() -> None:
 def test_color_options_match_the_colors() -> None:
     """Every color in the dropdown is accepted, and every color is in the dropdown."""
     assert _select_options("play_progress", "color") == COLOR_OPTIONS
+
+
+def test_sound_options_match_the_sounds() -> None:
+    """Every sound in the dropdown is accepted, and every sound is in the dropdown."""
+    assert _select_options("play_progress", "sound") == list(SOUND_OPTIONS)
