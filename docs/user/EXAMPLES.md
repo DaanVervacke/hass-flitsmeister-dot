@@ -105,6 +105,8 @@ script:
           blink: true
 ```
 
+To use your own color, replace `color: success` with `rgb_color: [0, 120, 255]`.
+
 ## Battery and charging
 
 ### Notify when the battery runs low

@@ -21,7 +21,7 @@ Home Assistant integration for the [Flitsmeister DOT](https://www.flitsmeister.n
 - **No credentials**: the DOT is paired over Bluetooth, nothing to sign in to
 - **Live status**: battery level, charging state and motion, pushed while the DOT is awake
 - **Alerts from Home Assistant**: play any Flitsmeister alert on the DOT from an automation, with the LED pattern and sound the app uses
-- **Approach progress**: light the LED ring to show how close the car is to a hazard
+- **Approach progress**: light the LED ring in a DOT color or any RGB color to show how close the car is to a hazard
 - **Button events**: trigger automations from the red and blue button, short and long press
 - **Settings control**: change the volume, LED brightness and LED orientation
 - **Discovery**: the DOT is found automatically once it wakes up
@@ -93,7 +93,7 @@ Two actions drive the DOT from automations. Both target the DOT device and fail 
 Play one of the alert animations the Flitsmeister app uses, with the matching LED pattern and sound.
 
 ```yaml
-service: flitsmeister_dot.play_animation
+action: flitsmeister_dot.play_animation
 data:
   device_id: your_dot_device_id
   preset: speed_trap
@@ -106,7 +106,7 @@ Presets include `speed_trap`, `speed_cam`, `traffic_camera`, `avg_speed_check_st
 Light the LED ring to show how close the car is to a hazard, like the approach progress in the app.
 
 ```yaml
-service: flitsmeister_dot.play_progress
+action: flitsmeister_dot.play_progress
 data:
   device_id: your_dot_device_id
   color: speed_trap
@@ -114,7 +114,8 @@ data:
   blink: false
 ```
 
-Set `blink: true` for the blinking overspeed warning with the reduce speed sound.
+Set `blink: true` for the blinking overspeed warning with the reduce speed sound. Give `color` for one of the DOT's own
+colors, or `rgb_color` for any color, such as `rgb_color: [255, 85, 0]`. A call takes one of the two.
 
 ## Button events
 
@@ -262,7 +263,7 @@ script/develop          # Home Assistant runs at http://localhost:8123
 >
 > - **AI assistance:** substantial
 > - **Human review:** partial, the maintainer decided the feature scope, entity list and connection model in a structured interview
-> - **Automated tests:** full suite passing, 164 tests covering setup, config flow, entities and actions against an in-memory fake device
+> - **Automated tests:** full suite passing, 179 tests covering setup, config flow, entities and actions against an in-memory fake device
 > - **Real-device or service testing:** not performed yet, pending verification against a live DOT
 > - **Maturity and known limitations:** first release, depends on the unofficial flitsmeister-dot-ble library, a firmware update can break the protocol
 >
