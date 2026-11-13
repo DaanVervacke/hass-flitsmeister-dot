@@ -100,7 +100,6 @@ play_progress:
     blink:
       name: Blink
       description: Blink the lit LEDs and play the reduce speed sound, like the overspeed warning.
-      required: true
       default: false
       selector:
         boolean:

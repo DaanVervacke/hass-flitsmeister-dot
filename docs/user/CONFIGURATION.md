@@ -89,9 +89,10 @@ Lights the LED ring to show how close the car is to a hazard.
 | `color`     | One of   | A named color of the DOT, for example `warning` or `speed_trap`    |
 | `rgb_color` | One of   | Any color as red, green and blue from 0 to 255                     |
 | `fraction`  | Yes      | How much of the ring is lit, 0 to 100 %                            |
-| `blink`     | Yes      | Blink the lit LEDs and play the reduce speed sound, off by default |
+| `blink`     | No       | Blink the lit LEDs and play the reduce speed sound, off by default |
 
-Give `color` or `rgb_color`. The action rejects a call that has both.
+Give exactly one of `color` or `rgb_color`. The action rejects a call that has both or neither. The RGB color
+`[0, 0, 0]` is black and leaves the LEDs off.
 
 ```yaml
 action: flitsmeister_dot.play_progress

@@ -1,7 +1,8 @@
 """Handler for the play_progress action."""
 
+from collections.abc import Mapping
 from dataclasses import replace
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from flitsmeister_dot_ble import DotColor, animations
 import probatio
@@ -41,7 +42,7 @@ def _argb(red: int, green: int, blue: int) -> int:
     return OPAQUE_ALPHA | red << 16 | green << 8 | blue
 
 
-def _color(data: dict) -> int:
+def _color(data: Mapping[str, Any]) -> int:
     """Return the color from the named color or the RGB color of the call."""
     if ATTR_RGB_COLOR in data:
         return _argb(*data[ATTR_RGB_COLOR])
